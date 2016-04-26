@@ -163,7 +163,6 @@ endif
 
 endif   # CONFIG_AXTLSWRAP
 
-
 ###########################################################################################
 # build httpd
 #
@@ -218,8 +217,8 @@ $(BUILD_DIR) : ssl/version.h
 ssl/version.h:
 	@echo "#define AXTLS_VERSION    \"(no version)\"" > ssl/version.h
 	       
-docs:
-	doxygen docsrc/axTLS.dox
+doc:
+	doxygen doc/axTLS.dox
 	
 test:
 	cd $(BUILD_DIR); ssltest; ../ssl/test/test_axssl.sh; cd -;
