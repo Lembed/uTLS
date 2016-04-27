@@ -17,7 +17,7 @@ To play with all the various axTLS options, type:
 ```bash
 $ make menuconfig
 ```
-![screen](docsrc/makemenuconfig.png)
+![screen](doc/makemenuconfig.png)
 
 Save the new configuration and rebuild.
 

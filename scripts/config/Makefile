@@ -36,9 +36,8 @@ endif
 
 CONF_SRC     = conf.c
 MCONF_SRC    = mconf.c
-LXD_SRC      = lxdialog/checklist.c lxdialog/menubox.c lxdialog/textbox.c \
-               lxdialog/yesno.c lxdialog/inputbox.c lxdialog/util.c \
-               lxdialog/msgbox.c
+
+LXD_SRC := $(whildcard lxdialog/%.c)
 
 SHARED_SRC   = zconf.tab.c
 SHARED_DEPS := $(srcdir)/lkc.h $(srcdir)/lkc_proto.h \
@@ -48,17 +47,17 @@ MCONF_OBJS   = $(patsubst %.c,%.o, $(MCONF_SRC) $(LXD_SRC))
 SHARED_OBJS  = $(patsubst %.c,%.o, $(SHARED_SRC))
 
 conf: $(CONF_OBJS) $(SHARED_OBJS)
-	$(HOSTCC) $(NATIVE_LDFLAGS) $^ -o $@
+	@$(HOSTCC) $(NATIVE_LDFLAGS) $^ -o $@
 
 mconf: $(MCONF_OBJS) $(SHARED_OBJS)
-	$(HOSTCC) $(NATIVE_LDFLAGS) $^ -o $@ $(LIBS)
+	@$(HOSTCC) $(NATIVE_LDFLAGS) $^ -o $@ $(LIBS)
 
 $(CONF_OBJS): %.o : $(srcdir)/%.c $(SHARED_DEPS)
-	$(HOSTCC) $(HOSTCFLAGS) -I. -c $< -o $@
+	@$(HOSTCC) $(HOSTCFLAGS) -I. -c $< -o $@
 
 $(MCONF_OBJS): %.o : $(srcdir)/%.c $(SHARED_DEPS)
 	@[ -d $(@D) ] || mkdir -v $(@D)
-	$(HOSTCC) $(HOSTCFLAGS) $(HOSTNCURSES) -I. -c $< -o $@
+	@$(HOSTCC) $(HOSTCFLAGS) $(HOSTNCURSES) -I. -c $< -o $@
 
 lkc_defs.h: $(srcdir)/lkc_proto.h
 	@sed < $< > $@ 's/P(\([^,]*\),.*/#define \1 (\*\1_p)/'
