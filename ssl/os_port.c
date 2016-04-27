@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -39,56 +39,6 @@
 #include <stdarg.h>
 #include "os_port.h"
 
-#ifdef WIN32
-/**
- * gettimeofday() not in Win32 
- */
-EXP_FUNC void STDCALL gettimeofday(struct timeval* t, void* timezone)
-{       
-#if defined(_WIN32_WCE)
-    t->tv_sec = time(NULL);
-    t->tv_usec = 0;                         /* 1sec precision only */ 
-#else
-    struct _timeb timebuffer;
-    _ftime(&timebuffer);
-    t->tv_sec = (long)timebuffer.time;
-    t->tv_usec = 1000 * timebuffer.millitm; /* 1ms precision */
-#endif
-}
-
-/**
- * strcasecmp() not in Win32
- */
-EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2)
-{
-    while (tolower(*s1) == tolower(*s2++))
-    {
-        if (*s1++ == '\0')
-        {
-            return 0;
-        }
-    }
-
-    return *(unsigned char *)s1 - *(unsigned char *)(s2 - 1);
-}
-
-
-EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size)
-{
-    HKEY hKey;
-    unsigned long datatype;
-    unsigned long bufferlength = buf_size;
-
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-            TEXT("SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters"),
-                        0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
-        return -1;
-
-    RegQueryValueEx(hKey, "Domain", NULL, &datatype, buf, &bufferlength);
-    RegCloseKey(hKey);
-    return 0; 
-}
-#endif
 
 #undef malloc
 #undef realloc
@@ -97,9 +47,9 @@ EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size)
 static const char * out_of_mem_str = "out of memory";
 static const char * file_open_str = "Could not open file \"%s\"";
 
-/* 
+/*
  * Some functions that call display some error trace and then call abort().
- * This just makes life much easier on embedded systems, since we're 
+ * This just makes life much easier on embedded systems, since we're
  * suffering major trauma...
  */
 EXP_FUNC void * STDCALL ax_malloc(size_t s)
