@@ -2,8 +2,43 @@
 #
 # Copyright (C) 2002 Erik Andersen <andersen@codepoet.org>
 
-srcdir=../../scripts/config
-include ../Makefile.include
+CONFIG_PATH=../../scripts/config
+
+CROSS           =$(subst ",, $(strip $(CROSS_COMPILER_PREFIX)))
+CC             = $(CROSS)gcc
+AR             = $(CROSS)ar
+AS             = $(CROSS)as
+LD             = $(CROSS)ld
+NM             = $(CROSS)nm
+STRIP          = $(CROSS)strip
+CPP            = $(CC) -E
+# MAKEFILES      = $(top_builddir)/.config
+RM             = rm
+RM_F           = $(RM) -f
+LN             = ln
+LN_S           = $(LN) -s
+MKDIR          = mkdir
+MKDIR_P        = $(MKDIR) -p
+MV             = mv
+CP             = cp
+
+HOSTCC    = gcc
+HOSTCFLAGS= -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer
+
+WARNINGS=-Wall -Wstrict-prototypes -Wshadow
+ARFLAGS=cru
+
+# A nifty macro to make testing gcc features easier
+check_gcc=$(shell \
+	if [ "$(1)" != "" ]; then \
+		if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; \
+		then echo "$(1)"; else echo "$(2)"; fi \
+	fi)
+
+CFLAGS_EXTRA=$(subst ",, $(strip $(EXTRA_CFLAGS_OPTIONS)))
+CFLAGS+=$(call check_gcc,-funsigned-char,)
+CFLAGS += $(CFLAGS_EXTRA)
+
 
 all: ncurses conf mconf
 
@@ -37,11 +72,11 @@ endif
 CONF_SRC     = conf.c
 MCONF_SRC    = mconf.c
 
-LXD_SRC := $(whildcard lxdialog/%.c)
+LXD_SRC := $(wildcard lxdialog/*.c)
 
 SHARED_SRC   = zconf.tab.c
-SHARED_DEPS := $(srcdir)/lkc.h $(srcdir)/lkc_proto.h \
-               lkc_defs.h $(srcdir)/expr.h zconf.tab.h
+SHARED_DEPS := $(CONFIG_PATH)/lkc.h $(CONFIG_PATH)/lkc_proto.h \
+               lkc_defs.h $(CONFIG_PATH)/expr.h zconf.tab.h
 CONF_OBJS    = $(patsubst %.c,%.o, $(CONF_SRC))
 MCONF_OBJS   = $(patsubst %.c,%.o, $(MCONF_SRC) $(LXD_SRC))
 SHARED_OBJS  = $(patsubst %.c,%.o, $(SHARED_SRC))
@@ -52,14 +87,14 @@ conf: $(CONF_OBJS) $(SHARED_OBJS)
 mconf: $(MCONF_OBJS) $(SHARED_OBJS)
 	@$(HOSTCC) $(NATIVE_LDFLAGS) $^ -o $@ $(LIBS)
 
-$(CONF_OBJS): %.o : $(srcdir)/%.c $(SHARED_DEPS)
+$(CONF_OBJS): %.o : $(CONFIG_PATH)/%.c $(SHARED_DEPS)
 	@$(HOSTCC) $(HOSTCFLAGS) -I. -c $< -o $@
 
-$(MCONF_OBJS): %.o : $(srcdir)/%.c $(SHARED_DEPS)
+$(MCONF_OBJS): %.o : $(CONFIG_PATH)/%.c $(SHARED_DEPS)
 	@[ -d $(@D) ] || mkdir -v $(@D)
 	@$(HOSTCC) $(HOSTCFLAGS) $(HOSTNCURSES) -I. -c $< -o $@
 
-lkc_defs.h: $(srcdir)/lkc_proto.h
+lkc_defs.h: $(CONFIG_PATH)/lkc_proto.h
 	@sed < $< > $@ 's/P(\([^,]*\),.*/#define \1 (\*\1_p)/'
 
 ###
@@ -70,29 +105,29 @@ lkc_defs.h: $(srcdir)/lkc_proto.h
 
 ifdef LKC_GENPARSER
 
-%.tab.c %.tab.h: $(srcdir)/%.y
+%.tab.c %.tab.h: $(CONFIG_PATH)/%.y
 	bison -t -d -v -b $* -p $(notdir $*) $<
 
-lex.%.c: $(srcdir)/%.l
+lex.%.c: $(CONFIG_PATH)/%.l
 	flex -P$(notdir $*) -o$@ $<
 else
 
 lex.zconf.o: lex.zconf.c $(SHARED_DEPS)
-	$(HOSTCC) $(HOSTCFLAGS) -I$(srcdir) -c $< -o $@
+	@$(HOSTCC) $(HOSTCFLAGS) -I$(CONFIG_PATH) -c $< -o $@
 
-lex.zconf.c: $(srcdir)/lex.zconf.c_shipped
+lex.zconf.c: $(CONFIG_PATH)/lex.zconf.c_shipped
 	cp $< $@
 
-zconf.tab.c: $(srcdir)/zconf.tab.c_shipped
+zconf.tab.c: $(CONFIG_PATH)/zconf.tab.c_shipped
 	cp $< $@
 
-zconf.tab.h: $(srcdir)/zconf.tab.h_shipped
+zconf.tab.h: $(CONFIG_PATH)/zconf.tab.h_shipped
 	cp $< $@
 endif
 
-zconf.tab.o: zconf.tab.c lex.zconf.c $(srcdir)/confdata.c $(srcdir)/expr.c \
-             $(srcdir)/symbol.c $(srcdir)/menu.c $(SHARED_DEPS)
-	$(HOSTCC) $(HOSTCFLAGS) -I$(srcdir) -I. -c $< -o $@
+zconf.tab.o: zconf.tab.c lex.zconf.c $(CONFIG_PATH)/confdata.c $(CONFIG_PATH)/expr.c \
+             $(CONFIG_PATH)/symbol.c $(CONFIG_PATH)/menu.c $(SHARED_DEPS)
+	@$(HOSTCC) $(HOSTCFLAGS) -I$(CONFIG_PATH) -I. -c $< -o $@
 
 .PHONY: ncurses
 

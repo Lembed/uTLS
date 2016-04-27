@@ -40,8 +40,32 @@ CONFIG_DIR=config
 
 SAMPLE_C_DIR:=samples/c
 
+#############################################################################################
+# configure toolchain
+CROSS_COMPILE           =$(subst ",, $(strip $(CROSS_COMPILER_PREFIX)))
+
+AS		= $(CROSS_COMPILE)as
+LD		= $(CROSS_COMPILE)ld
+CC		= $(CROSS_COMPILE)gcc
+CPP		= $(CC) -E
+AR		= $(CROSS_COMPILE)ar
+NM		= $(CROSS_COMPILE)nm
+STRIP		= $(CROSS_COMPILE)strip
+OBJCOPY		= $(CROSS_COMPILE)objcopy
+OBJDUMP		= $(CROSS_COMPILE)objdump
+AWK			= awk
+RM          = rm
+RM_F        = $(RM) -f
+LN          = ln
+LN_S        = $(LN) -s
+MKDIR       = mkdir
+MKDIR_P     = $(MKDIR) -p
+MV          = mv
+CP          = cp
+
+#############################################################################################
 # All executables and libraries go here
-#ifneq ($(MAKECMDGOALS), clean)
+
 -include .depend
 
 CFLAGS += -Iconfig -Issl -Icrypto

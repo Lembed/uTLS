@@ -439,7 +439,7 @@ next:
 	fclose(out);
 	if (out_h) {
 		fclose(out_h);
-		rename(".tmpconfig.h", "ssl/config.h");
+		rename(".tmpconfig.h", "crypto/config.h");
 		file_write_dep(NULL);
 	}
 	if (!name || basename != conf_def_filename) {
