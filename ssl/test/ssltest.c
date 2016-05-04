@@ -91,19 +91,19 @@ static int AES_test(BI_CTX *bi_ctx)
         uint8_t enc_data[TEST1_SIZE];
         uint8_t dec_data[TEST1_SIZE];
 
-        bigint *key_bi = bi_str_import(
-                             bi_ctx, "06A9214036B8A15B512E03D534120006");
-        bigint *iv_bi = bi_str_import(
-                            bi_ctx, "3DAFBA429D9EB430B422DA802C9FAC41");
-        bigint *ct_bi = bi_str_import(
-                            bi_ctx, "E353779C1079AEB82708942DBE77181A");
+        bigint *key_bi = bi_str_import(bi_ctx, "06A9214036B8A15B512E03D534120006");
+        bigint *iv_bi = bi_str_import(bi_ctx, "3DAFBA429D9EB430B422DA802C9FAC41");
+        bigint *ct_bi = bi_str_import(bi_ctx, "E353779C1079AEB82708942DBE77181A");
         bi_export(bi_ctx, key_bi, key, TEST1_SIZE);
         bi_export(bi_ctx, iv_bi, iv, TEST1_SIZE);
         bi_export(bi_ctx, ct_bi, ct, TEST1_SIZE);
 
         AES_set_key(&aes_key, key, iv, AES_MODE_128);
-        AES_cbc_encrypt(&aes_key, (const uint8_t *)in_str,
-                        enc_data, sizeof(enc_data));
+        AES_cbc_encrypt(&aes_key,
+                        (const uint8_t *)in_str,
+                        enc_data,
+                        sizeof(enc_data));
+
         if (memcmp(enc_data, ct, sizeof(ct))) {
             printf("Error: AES ENCRYPT #1 failed\n");
             goto end;

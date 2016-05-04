@@ -38,6 +38,8 @@ CRYPTO_DIR=crypto
 SSL_DIR=ssl
 CONFIG_DIR=config
 
+TLSWRAP_DIR:=samples/axtlswrap
+HTTPD_DIR:=samples/httpd
 SAMPLE_C_DIR:=samples/c
 
 #############################################################################################
@@ -168,7 +170,7 @@ SSL_TEST_TARGET: $(BUILD_DIR)/ssltest $(BUILD_DIR)/perf_bigint
 ###########################################################################################
 # build ssl wrap
 #
-WRAP_OBJ:=$(BUILD_DIR)/axtlswrap.o
+WRAP_OBJ:=$(TLSWRAP_DIR)/axtlswrap.o
 
 ifdef CONFIG_HTTP_STATIC_BUILD
 LIBS=$(BUILD_DIR)/libaxtls.a
@@ -197,7 +199,7 @@ HTTPD_LIBS=-L$(BUILD_DIR) -laxtls
 endif
 
 
-HTTPD_OBJ := axhttpd.o proc.o tdate_parse.o
+HTTPD_OBJ := $(HTTPD_DIR)/axhttpd.o $(HTTPD_DIR)/proc.o $(HTTPD_DIR)/tdate_parse.o
 
 HTTPD_OBJ:=$(HTTPD_OBJ:.o=.obj)
 %.obj : %.c

@@ -224,8 +224,7 @@ extern const uint8_t ssl_prot_prefs[NUM_PROTOCOLS];
 SSL *ssl_new(SSL_CTX *ssl_ctx, int client_fd);
 void disposable_new(SSL *ssl);
 void disposable_free(SSL *ssl);
-int send_packet(SSL *ssl, uint8_t protocol,
-                const uint8_t *in, int length);
+int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length);
 int do_svr_handshake(SSL *ssl, int handshake_type, uint8_t *buf, int hs_len);
 int do_clnt_handshake(SSL *ssl, int handshake_type, uint8_t *buf, int hs_len);
 int process_finished(SSL *ssl, uint8_t *buf, int hs_len);
@@ -244,18 +243,19 @@ void ssl_obj_free(SSLObjLoader *ssl_obj);
 int pkcs8_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password);
 int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password);
 int load_key_certs(SSL_CTX *ssl_ctx);
+
 #ifdef CONFIG_SSL_CERT_VERIFICATION
 int add_cert_auth(SSL_CTX *ssl_ctx, const uint8_t *buf, int len);
 void remove_ca_certs(CA_CERT_CTX *ca_cert_ctx);
 #endif
+
 #ifdef CONFIG_SSL_ENABLE_CLIENT
 int do_client_connect(SSL *ssl);
 #endif
 
 #ifdef CONFIG_SSL_FULL_MODE
 void DISPLAY_STATE(SSL *ssl, int is_send, uint8_t state, int not_ok);
-void DISPLAY_BYTES(SSL *ssl, const char *format,
-                   const uint8_t *data, int size, ...);
+void DISPLAY_BYTES(SSL *ssl, const char *format, const uint8_t *data, int size, ...);
 void DISPLAY_CERT(SSL *ssl, const X509_CTX *x509_ctx);
 void DISPLAY_RSA(SSL *ssl,  const RSA_CTX *rsa_ctx);
 void DISPLAY_ALERT(SSL *ssl, int alert);
@@ -264,20 +264,17 @@ void DISPLAY_ALERT(SSL *ssl, int alert);
 #define DISPLAY_CERT(A,B)
 #define DISPLAY_RSA(A,B)
 #define DISPLAY_ALERT(A, B)
-#ifdef WIN32
-void DISPLAY_BYTES(SSL *ssl, const char *format,/* win32 has no variadic macros */
-                   const uint8_t *data, int size, ...);
-#else
 #define DISPLAY_BYTES(A,B,C,D,...)
-#endif
-#endif
+
+#endif //CONFIG_SSL_FULL_MODE
 
 #ifdef CONFIG_SSL_CERT_VERIFICATION
 int process_certificate(SSL *ssl, X509_CTX **x509_ctx);
-#endif
+#endif //CONFIG_SSL_CERT_VERIFICATION
 
 SSL_SESSION *ssl_session_update(int max_sessions,
-                                SSL_SESSION *ssl_sessions[], SSL *ssl,
+                                SSL_SESSION *ssl_sessions[],
+                                SSL *ssl,
                                 const uint8_t *session_id);
 void kill_ssl_session(SSL_SESSION **ssl_sessions, SSL *ssl);
 

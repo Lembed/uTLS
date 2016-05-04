@@ -78,7 +78,7 @@ config CONFIG_AXHTTPD
     help
         Build the AXHTTPD web server
 
-source httpd/Config.in
+source samples/httpd/Config.in
 source samples/Config.in
 source ssl/BigIntConfig.in
 

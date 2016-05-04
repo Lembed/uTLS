@@ -249,7 +249,8 @@ static int process_server_hello(SSL *ssl)
 
         /* pad the rest with 0's */
         if (sess_id_size < SSL_SESSION_ID_SIZE) {
-            memset(&ssl->session->session_id[sess_id_size], 0,
+            memset(&ssl->session->session_id[sess_id_size],
+                   0,
                    SSL_SESSION_ID_SIZE - sess_id_size);
         }
     }
@@ -260,8 +261,7 @@ static int process_server_hello(SSL *ssl)
 
     /* get the real cipher we are using */
     ssl->cipher = buf[++offset];
-    ssl->next_state = IS_SET_SSL_FLAG(SSL_SESSION_RESUME) ?
-                      HS_FINISHED : HS_CERTIFICATE;
+    ssl->next_state = IS_SET_SSL_FLAG(SSL_SESSION_RESUME) ? HS_FINISHED : HS_CERTIFICATE;
 
     offset++;   // skip the compr
     PARANOIA_CHECK(pkt_size, offset);
