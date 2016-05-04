@@ -41,6 +41,7 @@ CONFIG_DIR=config
 TLSWRAP_DIR:=samples/axtlswrap
 HTTPD_DIR:=samples/httpd
 SAMPLE_C_DIR:=samples/c
+SSL_TEST_DIR:=samples/test
 
 #############################################################################################
 # configure toolchain
@@ -148,8 +149,8 @@ CLEANS+=$(LIBS_CLEAN)
 ###########################################################################################
 # build the ssl test 
 #
-SSL_TEST_OBJ := $(SSL_DIR)/test/ssltest.o
-SSL_PERFORMANCE_OBJ := $(SSL_DIR)/test/perf_bigint.o
+SSL_TEST_OBJ := $(SSL_TEST_DIR)/ssltest.o
+SSL_PERFORMANCE_OBJ := $(SSL_TEST_DIR)/perf_bigint.o
 
 ifdef CONFIG_PERFORMANCE_TESTING
 $(BUILD_DIR)/perf_bigint: SSL_PERFORMANCE_OBJ $(BUILD_DIR)/libaxtls.a
