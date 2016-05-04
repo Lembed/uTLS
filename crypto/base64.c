@@ -24,7 +24,8 @@ static const char Base64DecodeChars[] = {
     41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1
 };
 
-char * xbase64_encode(const unsigned char * data, size_t len) {
+char * xbase64_encode(const unsigned char * data, size_t len)
+{
     char *out, *pos;
     const unsigned char *in = data;
     size_t i, quot, rem;
@@ -55,8 +56,7 @@ char * xbase64_encode(const unsigned char * data, size_t len) {
         *pos++ = Base64EncodeChars[(c & 0x03) << 4];
         *pos++ = '=';
         *pos++ = '=';
-    }
-    else if (rem == 2) {
+    } else if (rem == 2) {
         c  = (0x000000ff & *in++) << 8;
         c |=  0x000000ff & *in++;
         *pos++ = Base64EncodeChars[c >> 10];
@@ -70,7 +70,8 @@ char * xbase64_encode(const unsigned char * data, size_t len) {
     return out;
 }
 
-unsigned char * xbase64_decode(const char * data, size_t * out_len) {
+unsigned char * xbase64_decode(const char * data, size_t * out_len)
+{
     unsigned char *out, *pos;
     const unsigned char *in = (const unsigned char *)data;
     size_t i, len, quot, rem, paddings = 0;

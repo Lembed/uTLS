@@ -184,7 +184,7 @@ int conf_string(struct menu *menu)
 				break;
 			}
 		default:
-			line[strlen(line)-1] = 0;
+			line[strlen(line) - 1] = 0;
 			def = line;
 		}
 		if (def && sym_set_string_value(sym, def))
@@ -351,7 +351,7 @@ static int conf_choice(struct menu *menu)
 			strip(line);
 			if (line[0] == '?') {
 				printf("\n%s\n", menu->sym->help ?
-					menu->sym->help : nohelp_text);
+				       menu->sym->help : nohelp_text);
 				continue;
 			}
 			if (!line[0])
@@ -372,7 +372,7 @@ static int conf_choice(struct menu *menu)
 			break;
 		}
 
-	conf_childs:
+conf_childs:
 		for (child = menu->list; child; child = child->next) {
 			if (!child->sym || !menu_is_visible(child))
 				continue;
@@ -383,7 +383,7 @@ static int conf_choice(struct menu *menu)
 			continue;
 		if (line[strlen(line) - 1] == '?') {
 			printf("\n%s\n", child->sym->help ?
-				child->sym->help : nohelp_text);
+			       child->sym->help : nohelp_text);
 			continue;
 		}
 		sym_set_choice_value(sym, child->sym);
@@ -420,9 +420,9 @@ static void conf(struct menu *menu)
 			prompt = menu_get_prompt(menu);
 			if (prompt)
 				printf("%*c\n%*c %s\n%*c\n",
-					indent, '*',
-					indent, '*', prompt,
-					indent, '*');
+				       indent, '*',
+				       indent, '*', prompt,
+				       indent, '*');
 		default:
 			;
 		}
@@ -505,7 +505,7 @@ int main(int ac, char **av)
 			defconfig_file = av[i++];
 			if (!defconfig_file) {
 				printf("%s: No default config file specified\n",
-					av[0]);
+				       av[0]);
 				exit(1);
 			}
 			break;
@@ -528,7 +528,7 @@ int main(int ac, char **av)
 			exit(0);
 		}
 	}
-  	name = av[i];
+	name = av[i];
 	if (!name) {
 		printf("%s: configuration file missing\n", av[0]);
 	}
@@ -540,19 +540,19 @@ int main(int ac, char **av)
 			defconfig_file = conf_get_default_confname();
 		if (conf_read(defconfig_file)) {
 			printf("***\n"
-				"*** Can't find default configuration \"%s\"!\n"
-				"***\n", defconfig_file);
+			       "*** Can't find default configuration \"%s\"!\n"
+			       "***\n", defconfig_file);
 			exit(1);
 		}
 		break;
 	case ask_silent:
 		if (stat(".config", &tmpstat)) {
 			printf("***\n"
-				"*** You have not yet configured axTLS!\n"
-				"***\n"
-				"*** Please run some configurator (e.g. \"make oldconfig\" or\n"
-				"*** \"make menuconfig\" or \"make config\").\n"
-				"***\n");
+			       "*** You have not yet configured axTLS!\n"
+			       "***\n"
+			       "*** Please run some configurator (e.g. \"make oldconfig\" or\n"
+			       "*** \"make menuconfig\" or \"make config\").\n"
+			       "***\n");
 			exit(1);
 		}
 	case ask_all:

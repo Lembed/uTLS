@@ -35,7 +35,8 @@
 /*
  * XTEA key schedule
  */
-void xtea_init( xtea_context *ctx, const unsigned char key[16] ) {
+void xtea_init( xtea_context *ctx, const unsigned char key[16] )
+{
     int i;
 
     memset( ctx, 0, sizeof(xtea_context) );
@@ -46,7 +47,8 @@ void xtea_init( xtea_context *ctx, const unsigned char key[16] ) {
 }
 
 
-void xtea_free( xtea_context *ctx ) {
+void xtea_free( xtea_context *ctx )
+{
     if ( ctx == NULL )
         return;
 
@@ -60,7 +62,8 @@ void xtea_free( xtea_context *ctx ) {
 int xtea_crypt_ecb( xtea_context *ctx,
                     int mode,
                     const unsigned char input[8],
-                    unsigned char output[8]) {
+                    unsigned char output[8])
+{
 
     uint32_t *k, v0, v1, i;
 
@@ -102,7 +105,8 @@ int xtea_crypt_cbc( xtea_context *ctx,
                     size_t length,
                     unsigned char iv[8],
                     const unsigned char *input,
-                    unsigned char *output) {
+                    unsigned char *output)
+{
     int i;
     unsigned char temp[8];
 

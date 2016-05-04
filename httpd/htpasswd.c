@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -39,23 +39,22 @@ int tfd;
 void base64_encode(const uint8_t *in, size_t inlen, char *out, size_t outlen)
 {
     static const char b64str[64] =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    while (inlen && outlen)
-    {
+    while (inlen && outlen) {
         *out++ = b64str[(in[0] >> 2) & 0x3f];
         if (!--outlen)
             break;
 
         *out++ = b64str[((in[0] << 4)
-                + (--inlen ? in[1] >> 4 : 0)) & 0x3f];
+                         + (--inlen ? in[1] >> 4 : 0)) & 0x3f];
         if (!--outlen)
             break;
         *out++ = (inlen
-             ? b64str[((in[1] << 2)
-                 + (--inlen ? in[2] >> 6 : 0))
-             & 0x3f]
-             : '=');
+                  ? b64str[((in[1] << 2)
+                            + (--inlen ? in[2] >> 6 : 0))
+                           & 0x3f]
+                  : '=');
         if (!--outlen)
             break;
         *out++ = inlen ? b64str[in[2] & 0x3f] : '=';
@@ -71,9 +70,9 @@ void base64_encode(const uint8_t *in, size_t inlen, char *out, size_t outlen)
         *out = '\0';
 }
 
-static void usage(void) 
+static void usage(void)
 {
-    fprintf(stderr,"Usage: htpasswd username\n");
+    fprintf(stderr, "Usage: htpasswd username\n");
     exit(1);
 }
 
@@ -86,43 +85,40 @@ static char * getpass(const char *prompt)
     printf(prompt); TTY_FLUSH();
 #if 0
     fp = fopen("/dev/tty", "w");
-    if (fp == NULL) 
-    {
+    if (fp == NULL) {
         printf("null\n"); TTY_FLUSH();
         fp = stdin;
     }
 #endif
 
     fgets(buf, sizeof(buf), fp);
-    while (buf[strlen(buf)-1] < ' ') 
-        buf[strlen(buf)-1] = '\0';
+    while (buf[strlen(buf) - 1] < ' ')
+        buf[strlen(buf) - 1] = '\0';
 
-    //if (fp != stdin) 
+    //if (fp != stdin)
     //    fclose(fp);
     return buf;
 }
 #endif
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     char* pw;
     uint8_t md5_salt[MD5_SIZE], md5_pass[MD5_SIZE];
-    char b64_salt[MD5_SIZE+10], b64_pass[MD5_SIZE+10];
+    char b64_salt[MD5_SIZE + 10], b64_pass[MD5_SIZE + 10];
     MD5_CTX ctx;
 
     if (argc != 2)
         usage();
 
     pw = strdup(getpass("New password:"));
-    if (strcmp(pw, getpass("Re-type new password:")) != 0)
-    {
+    if (strcmp(pw, getpass("Re-type new password:")) != 0) {
         fprintf(stderr, "They don't match, sorry.\n" );
         exit(1);
     }
 
     RNG_initialize();
-    if (get_random(MD5_SIZE, md5_salt) < 0)
-    {
+    if (get_random(MD5_SIZE, md5_salt) < 0) {
         fprintf(stderr, "Can't get random data\n" );
         exit(1);
     }

@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -40,7 +40,7 @@
 #include "ssl.h"
 
 /**************************************************************************
- * BIGINT tests 
+ * BIGINT tests
  *
  **************************************************************************/
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     const char *plaintext;
     uint8_t compare[MAX_KEY_BYTE_SIZE];
     int i, max_biggie = 10;    /* really crank performance */
-    int len; 
+    int len;
     uint8_t *buf;
 
     /**
@@ -73,11 +73,9 @@ int main(int argc, char *argv[])
     bi_data = bi_res;   /* reuse again */
 
     gettimeofday(&tv_old, NULL);
-    for (i = 0; i < max_biggie; i++)
-    {
+    for (i = 0; i < max_biggie; i++) {
         bi_res = RSA_private(rsa_ctx, bi_copy(bi_data));
-        if (i < max_biggie-1)
-        {
+        if (i < max_biggie - 1) {
             bi_free(ctx, bi_res);
         }
     }
@@ -85,9 +83,9 @@ int main(int argc, char *argv[])
     gettimeofday(&tv_new, NULL);
     bi_free(ctx, bi_data);
 
-    diff = (tv_new.tv_sec-tv_old.tv_sec)*1000 +
-                (tv_new.tv_usec-tv_old.tv_usec)/1000;
-    printf("512 bit decrypt time: %.2fms\n", diff/max_biggie);
+    diff = (tv_new.tv_sec - tv_old.tv_sec) * 1000 +
+           (tv_new.tv_usec - tv_old.tv_usec) / 1000;
+    printf("512 bit decrypt time: %.2fms\n", diff / max_biggie);
     TTY_FLUSH();
     bi_export(ctx, bi_res, compare, 64);
     RSA_free(rsa_ctx);
@@ -111,11 +109,9 @@ int main(int argc, char *argv[])
     bi_data = bi_res;   /* reuse again */
 
     gettimeofday(&tv_old, NULL);
-    for (i = 0; i < max_biggie; i++)
-    {
+    for (i = 0; i < max_biggie; i++) {
         bi_res = RSA_private(rsa_ctx, bi_copy(bi_data));
-        if (i < max_biggie-1)
-        {
+        if (i < max_biggie - 1) {
             bi_free(ctx, bi_res);
         }
     }
@@ -123,9 +119,9 @@ int main(int argc, char *argv[])
     gettimeofday(&tv_new, NULL);
     bi_free(ctx, bi_data);
 
-    diff = (tv_new.tv_sec-tv_old.tv_sec)*1000 +
-                (tv_new.tv_usec-tv_old.tv_usec)/1000;
-    printf("1024 bit decrypt time: %.2fms\n", diff/max_biggie);
+    diff = (tv_new.tv_sec - tv_old.tv_sec) * 1000 +
+           (tv_new.tv_usec - tv_old.tv_usec) / 1000;
+    printf("1024 bit decrypt time: %.2fms\n", diff / max_biggie);
     TTY_FLUSH();
     bi_export(ctx, bi_res, compare, 128);
     RSA_free(rsa_ctx);
@@ -151,20 +147,18 @@ int main(int argc, char *argv[])
     bi_data = bi_res;   /* reuse again */
 
     gettimeofday(&tv_old, NULL);
-    for (i = 0; i < max_biggie; i++)
-    {
+    for (i = 0; i < max_biggie; i++) {
         bi_res = RSA_private(rsa_ctx, bi_copy(bi_data));
-        if (i < max_biggie-1)
-        {
+        if (i < max_biggie - 1) {
             bi_free(ctx, bi_res);
         }
     }
     gettimeofday(&tv_new, NULL);
     bi_free(ctx, bi_data);
 
-    diff = (tv_new.tv_sec-tv_old.tv_sec)*1000 +
-                (tv_new.tv_usec-tv_old.tv_usec)/1000;
-    printf("2048 bit decrypt time: %.2fms\n", diff/max_biggie);
+    diff = (tv_new.tv_sec - tv_old.tv_sec) * 1000 +
+           (tv_new.tv_usec - tv_old.tv_usec) / 1000;
+    printf("2048 bit decrypt time: %.2fms\n", diff / max_biggie);
     TTY_FLUSH();
     bi_export(ctx, bi_res, compare, 256);
     RSA_free(rsa_ctx);
@@ -193,18 +187,16 @@ int main(int argc, char *argv[])
     gettimeofday(&tv_old, NULL);
     bi_res = RSA_public(rsa_ctx, bi_data);
     gettimeofday(&tv_new, NULL);
-    diff = (tv_new.tv_sec-tv_old.tv_sec)*1000 +
-                (tv_new.tv_usec-tv_old.tv_usec)/1000;
+    diff = (tv_new.tv_sec - tv_old.tv_sec) * 1000 +
+           (tv_new.tv_usec - tv_old.tv_usec) / 1000;
     printf("4096 bit encrypt time: %.2fms\n", diff);
     TTY_FLUSH();
     bi_data = bi_res;   /* reuse again */
 
     gettimeofday(&tv_old, NULL);
-    for (i = 0; i < max_biggie; i++)
-    {
+    for (i = 0; i < max_biggie; i++) {
         bi_res = RSA_private(rsa_ctx, bi_copy(bi_data));
-        if (i < max_biggie-1)
-        {
+        if (i < max_biggie - 1) {
             bi_free(ctx, bi_res);
         }
     }
@@ -212,9 +204,9 @@ int main(int argc, char *argv[])
     gettimeofday(&tv_new, NULL);
     bi_free(ctx, bi_data);
 
-    diff = (tv_new.tv_sec-tv_old.tv_sec)*1000 +
-                (tv_new.tv_usec-tv_old.tv_usec)/1000;
-    printf("4096 bit decrypt time: %.2fms\n", diff/max_biggie);
+    diff = (tv_new.tv_sec - tv_old.tv_sec) * 1000 +
+           (tv_new.tv_usec - tv_old.tv_usec) / 1000;
+    printf("4096 bit decrypt time: %.2fms\n", diff / max_biggie);
     TTY_FLUSH();
     bi_export(ctx, bi_res, compare, 512);
     RSA_free(rsa_ctx);

@@ -23,7 +23,8 @@ const int const_one = 1;
     for (++i; i < 16; ++i) fixed_key[i] = 0;\
 
 
-static uint32_t * xxtea_to_uint_array(const uint8_t * data, size_t len, int inc_len, size_t * out_len) {
+static uint32_t * xxtea_to_uint_array(const uint8_t * data, size_t len, int inc_len, size_t * out_len)
+{
     uint32_t *out;
     size_t i, n;
 
@@ -35,8 +36,7 @@ static uint32_t * xxtea_to_uint_array(const uint8_t * data, size_t len, int inc_
         if (!out) return NULL;
         out[n] = (uint32_t)len;
         *out_len = n + 1;
-    }
-    else {
+    } else {
         out = (uint32_t *)calloc(n, sizeof(uint32_t));
         if (!out) return NULL;
         *out_len = n;
@@ -52,7 +52,8 @@ static uint32_t * xxtea_to_uint_array(const uint8_t * data, size_t len, int inc_
     return out;
 }
 
-static uint8_t * xxtea_to_ubyte_array(const uint32_t * data, size_t len, int inc_len, size_t * out_len) {
+static uint8_t * xxtea_to_ubyte_array(const uint32_t * data, size_t len, int inc_len, size_t * out_len)
+{
     uint8_t *out;
     size_t i, m, n;
 
@@ -81,7 +82,8 @@ static uint8_t * xxtea_to_ubyte_array(const uint32_t * data, size_t len, int inc
     return out;
 }
 
-static uint32_t * xxtea_uint_encrypt(uint32_t * data, size_t len, uint32_t * key) {
+static uint32_t * xxtea_uint_encrypt(uint32_t * data, size_t len, uint32_t * key)
+{
     uint32_t n = (uint32_t)len - 1;
     uint32_t z = data[n], y, p, q = 6 + 52 / (n + 1), sum = 0, e;
 
@@ -103,7 +105,8 @@ static uint32_t * xxtea_uint_encrypt(uint32_t * data, size_t len, uint32_t * key
     return data;
 }
 
-static uint32_t * xxtea_uint_decrypt(uint32_t * data, size_t len, uint32_t * key) {
+static uint32_t * xxtea_uint_decrypt(uint32_t * data, size_t len, uint32_t * key)
+{
     uint32_t n = (uint32_t)len - 1;
     uint32_t z, y = data[0], p, q = 6 + 52 / (n + 1), sum = q * DELTA, e;
 
@@ -125,7 +128,8 @@ static uint32_t * xxtea_uint_decrypt(uint32_t * data, size_t len, uint32_t * key
     return data;
 }
 
-static uint8_t * xxtea_ubyte_encrypt(const uint8_t * data, size_t len, const uint8_t * key, size_t * out_len) {
+static uint8_t * xxtea_ubyte_encrypt(const uint8_t * data, size_t len, const uint8_t * key, size_t * out_len)
+{
     uint8_t *out;
     uint32_t *data_array, *key_array;
     size_t data_len, key_len;
@@ -149,7 +153,8 @@ static uint8_t * xxtea_ubyte_encrypt(const uint8_t * data, size_t len, const uin
     return out;
 }
 
-static uint8_t * xxtea_ubyte_decrypt(const uint8_t * data, size_t len, const uint8_t * key, size_t * out_len) {
+static uint8_t * xxtea_ubyte_decrypt(const uint8_t * data, size_t len, const uint8_t * key, size_t * out_len)
+{
     uint8_t *out;
     uint32_t *data_array, *key_array;
     size_t data_len, key_len;
@@ -173,12 +178,14 @@ static uint8_t * xxtea_ubyte_decrypt(const uint8_t * data, size_t len, const uin
     return out;
 }
 
-void * xxtea_encrypt(const void * data, size_t len, const void * key, size_t * out_len) {
+void * xxtea_encrypt(const void * data, size_t len, const void * key, size_t * out_len)
+{
     FIXED_KEY
     return xxtea_ubyte_encrypt(data, len, fixed_key, out_len);
 }
 
-void * xxtea_decrypt(const void * data, size_t len, const void * key, size_t * out_len) {
+void * xxtea_decrypt(const void * data, size_t len, const void * key, size_t * out_len)
+{
     FIXED_KEY
     return xxtea_ubyte_decrypt(data, len, fixed_key, out_len);
 }

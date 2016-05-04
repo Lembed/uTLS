@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2009, Steve Bennett
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,7 +32,7 @@
  * sslwrap re-implemented with axTLS - a way to wrap an existing webserver
  * with axTLS.
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -64,26 +64,22 @@ int main(int argc, char *argv[])
 	/* This relies on stdin and stdout being one and the same */
 	int sslfd = fileno(stdin);
 
-	while (argc > 2 && argv[1][0] == '-') 
-    {
-		if (argc > 3 && strcmp(argv[1], "-t") == 0) 
-        {
+	while (argc > 2 && argv[1][0] == '-') {
+		if (argc > 3 && strcmp(argv[1], "-t") == 0) {
 			opt_timeout = atoi(argv[2]);
 			argv += 2;
 			argc -= 2;
 			continue;
 		}
 
-		if (strcmp(argv[1], "-q") == 0) 
-        {
+		if (strcmp(argv[1], "-q") == 0) {
 			log_opts = 0;
 			argv++;
 			argc--;
 			continue;
 		}
 
-		if (strcmp(argv[1], "-v") == 0) 
-        {
+		if (strcmp(argv[1], "-v") == 0) {
 			opt_verbose++;
 			argv++;
 			argc--;
@@ -91,59 +87,52 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (argc < 2) 
-    {
+	if (argc < 2) {
 		fprintf(stderr, "Usage: axtlswrap [-v] [-q] "
-                "[-t timeout] command ...\n");
+		        "[-t timeout] command ...\n");
 		return 1;
 	}
 
-	if (access(argv[1], X_OK) != 0) 
-    {
+	if (access(argv[1], X_OK) != 0)	{
 		fprintf(stderr, "Not an executabled: %s\n", argv[1]);
 		return 1;
 	}
 
-	openlog("axtlswrap", LOG_PID | log_opts, LOG_DAEMON);
+	if (opt_verbose) {
+		openlog("axtlswrap", LOG_PID | log_opts, LOG_DAEMON);
+	}
 
 	/* Create an SSL context with the required options */
-	ssl_ctx = ssl_ctx_new(opt_verbose > 1 ? 
-                    SSL_DISPLAY_STATES | SSL_DISPLAY_CERTS : 0, 1);
+	ssl_ctx = ssl_ctx_new(opt_verbose > 1 ? SSL_DISPLAY_STATES | SSL_DISPLAY_CERTS : 0, 1);
 
-	if (ssl_ctx == NULL) 
-    {
+	if (ssl_ctx == NULL) {
 		syslog(LOG_ERR, "Failed to create SSL ctx");
 		return 1;
 	}
 
 	/* And create an ssl session attached to sslfd */
 	ssl = ssl_server_new(ssl_ctx, sslfd);
-	if (ssl == NULL) 
-    {
+	if (ssl == NULL) {
 		syslog(LOG_ERR, "Failed to create SSL connection");
 		return 1;
 	}
 
 	/* Get past the handshaking */
-	while ((readlen = ssl_read(ssl, &readbuf)) == SSL_OK) 
-    {
+	while ((readlen = ssl_read(ssl, &readbuf)) == SSL_OK) {
 		/* Still handshaking */
 	}
 
-	if (readlen < 0) 
-    {
+	if (readlen < 0) {
 		syslog(LOG_ERR, "SSL handshake failed: %d", readlen);
 		return 1;
 	}
 
-	if (opt_verbose) 
-    {
+	if (opt_verbose) {
 		syslog(LOG_INFO, "SSL handshake OK");
 	}
 
 	/* Looks OK, we have data, so fork the child and start */
-	if (pipe(fd) < 0 || pipe(df) < 0) 
-    {
+	if (pipe(fd) < 0 || pipe(df) < 0)	{
 		syslog(LOG_ERR, "pipe failed: %m");
 		return 1;
 	}
@@ -155,21 +144,20 @@ int main(int argc, char *argv[])
 	setenv("SSL_PROTOCOL", "TLSv1", 1);
 
 #ifndef NOMMU
-	if (opt_verbose) 
-    {
+	if (opt_verbose) {
 		pid = fork();
-	}
-	else
+	} else
 #endif
-	pid = vfork();
-	if (pid < 0) 
-    {
+	{
+		pid = vfork();
+	}
+
+	if (pid < 0) {
 		syslog(LOG_ERR, "vfork failed: %m");
 		return 1;
 	}
 
-	if (pid > 0) 
-    {
+	if (pid > 0)	{
 		/* This is the parent */
 		unsigned char writebuf[4096];
 		int writelen = 0;
@@ -192,8 +180,7 @@ int main(int argc, char *argv[])
 		pfd[2].fd = crfd;
 
 		/* While the child is alive or there is something to return...  */
-		while (child_alive || writelen > 0) 
-        {
+		while (child_alive || writelen > 0)	{
 			/* Work out what to read and what to write */
 			int ret;
 
@@ -201,14 +188,12 @@ int main(int argc, char *argv[])
 			pfd[0].revents = 0;
 
 			/* Only want to read ssl data if there is nothing else to do */
-			if (readlen == 0) 
-            {
+			if (readlen == 0) {
 				/* can read ssl data */
 				pfd[0].events |= POLLIN;
 			}
 
-			if (writelen > 0) 
-            {
+			if (writelen > 0) {
 				/* can write ssl data - will block to do this */
 				pfd[0].events |= POLLOUT;
 			}
@@ -216,136 +201,103 @@ int main(int argc, char *argv[])
 			pfd[1].events = 0;
 			pfd[1].revents = 0;
 
-			if (child_alive && readlen > 0) 
-            {
+			if (child_alive && readlen > 0)	{
 				pfd[1].events |= POLLOUT;
 			}
 
 			pfd[2].events = 0;
 			pfd[2].revents = 0;
 
-			if (child_alive && writelen == 0) 
-            {
+			if (child_alive && writelen == 0) {
 				pfd[2].events |= POLLIN;
 			}
 
 			/* Timeout after 1 second so we can increment timeout_count */
 			ret = poll(pfd, 3, 1000);
-
-			if (ret < 0) 
-            {
-				if (errno != EAGAIN) 
-                {
+			if (ret < 0) {
+				if (errno != EAGAIN) {
 					/* Kill off the child */
 					kill(pid, SIGTERM);
 					break;
 				}
-
 				continue;
 			}
 
-			if (ret == 0) 
-            {
-				if (++timeout_count >= opt_timeout) 
-                {
+			if (ret == 0) {
+				if (++timeout_count >= opt_timeout)	{
 					/* Kill off the child */
 					kill(pid, SIGTERM);
 					break;
 				}
-
 				continue;
 			}
 
 			timeout_count = 0;
 
-			if (pfd[2].revents & POLLNVAL) 
-            {
+			if (pfd[2].revents & POLLNVAL)	{
 				/* REVISIT: This can probably be removed */
 				syslog(LOG_ERR, "Child closed output pipe");
 				child_alive = 0;
-			}
-			else if (pfd[2].revents & POLLIN) 
-            {
+			} else if (pfd[2].revents & POLLIN) {
 				/* Can read from (3) */
 				writelen = read(crfd, writebuf, sizeof(writebuf));
-				if (writelen <= 0) 
-                {
-					if (writelen < 0) 
-                    {
+				if (writelen <= 0)	{
+					if (writelen < 0) {
 						syslog(LOG_WARNING, "Failed to read from child: len=%d",
-                                writelen);
+						       writelen);
 					}
 					break;
 				}
-			}
-			else if ((pfd[2].revents & POLLHUP) && kill(pid, 0) == 0) 
-            {
-				if (opt_verbose) 
-                {
+			} else if ((pfd[2].revents & POLLHUP) && kill(pid, 0) == 0) {
+				if (opt_verbose) {
 					syslog(LOG_INFO, "Child died and pipe gave POLLHUP");
 				}
-
 				child_alive = 0;
 			}
 
-			if (writelen > 0) 
-            {
+			if (writelen > 0) {
 				const unsigned char *pt = writebuf;
-				while (writelen > 0) 
-                {
+				while (writelen > 0) {
 					ret = ssl_write(ssl, pt, writelen);
-					if (ret <= 0) 
-                    {
+					if (ret <= 0) {
 						syslog(LOG_WARNING, "Failed to write ssl: ret=%d", ret);
 						/* Kill off the child now */
 						kill(pid, SIGTERM);
 						writelen = -1;
 						break;
-					}
-					else 
-                    {
+					} else {
 						pt += ret;
 						writelen -= ret;
 					}
 				}
-				if (writelen < 0) 
-                {
+				if (writelen < 0) {
 					break;
 				}
-			}
-			else if (pfd[0].revents & POLLIN) 
-            {
+			} else if (pfd[0].revents & POLLIN) {
 				readlen = ssl_read(ssl, &readbuf);
-				if (readlen <= 0 && opt_verbose) 
-                {
+				if (readlen <= 0 && opt_verbose) {
 					syslog(LOG_INFO, "ssl_read() returned %d", readlen);
 				}
 
-				if (readlen < 0) 
-                {
+				if (readlen < 0) {
 					/* Kill off the child */
 					kill(pid, SIGTERM);
 					break;
 				}
 			}
 
-			if (pfd[1].revents & POLLNVAL) 
-            {
+			if (pfd[1].revents & POLLNVAL)	{
 				/* REVISIT: This can probably be removed */
 				syslog(LOG_ERR, "Child closed input pipe");
 				readlen = -1;
 				child_alive = 0;
-			}
-			else if (pfd[1].revents & POLLOUT) 
-            {
+			} else if (pfd[1].revents & POLLOUT)	{
 				const unsigned char *pt = readbuf;
-				while (readlen > 0) 
-                {
+				while (readlen > 0)	{
 					int len = write(cwfd, pt, readlen);
-					if (len <= 0) 
-                    {
-						syslog(LOG_WARNING, "Failed to write to child: len=%d", 
-                                len);
+					if (len <= 0) {
+						syslog(LOG_WARNING, "Failed to write to child: len=%d",
+						       len);
 						break;
 					}
 
@@ -359,7 +311,7 @@ int main(int argc, char *argv[])
 		ssl_free(ssl);
 #if 0
 		fprintf(stderr, "[%d] SSL done: timeout_count=%d, readlen=%d, writelen=%d, child_alive=%d\n",
-			getpid(), timeout_count, readlen, writelen, child_alive);
+		        getpid(), timeout_count, readlen, writelen, child_alive);
 #endif
 		return 0;
 	}
@@ -368,12 +320,17 @@ int main(int argc, char *argv[])
 	close(df[1]);
 	close(fd[0]);
 
-	dup2(df[0],0);
-	dup2(fd[1],1);
+	dup2(df[0], 0);
+	dup2(fd[1], 1);
 
 	close(df[0]);
 	close(fd[1]);
 
 	execv(argv[1], argv + 1);
+
+	if (opt_verbose) {
+		closelog();
+	}
+
 	_exit(1);
 }

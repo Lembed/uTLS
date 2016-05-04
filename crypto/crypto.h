@@ -68,16 +68,14 @@ extern "C" {
 #define AES_BLOCKSIZE           16
 #define AES_IV_SIZE             16
 
-typedef struct aes_key_st
-{
+typedef struct aes_key_st {
   uint16_t rounds;
   uint16_t key_size;
   uint32_t ks[(AES_MAXROUNDS + 1) * 8];
   uint8_t iv[AES_IV_SIZE];
 } AES_CTX;
 
-typedef enum
-{
+typedef enum {
   AES_MODE_128,
   AES_MODE_256
 } AES_MODE;
@@ -93,8 +91,7 @@ void AES_convert_key(AES_CTX *ctx);
  * RC4 declarations
  **************************************************************************/
 
-typedef struct
-{
+typedef struct {
   uint8_t x, y, m[256];
 } RC4_CTX;
 
@@ -111,8 +108,7 @@ void RC4_crypt(RC4_CTX *s, const uint8_t *msg, uint8_t *data, int length);
  *  This structure will hold context information for the SHA-1
  *  hashing operation
  */
-typedef struct
-{
+typedef struct {
   uint32_t Intermediate_Hash[SHA1_SIZE / 4]; /* Message Digest */
   uint32_t Length_Low;            /* Message length in bits */
   uint32_t Length_High;           /* Message length in bits */
@@ -130,8 +126,7 @@ void SHA1_Final(uint8_t *digest, SHA1_CTX *);
 
 #define SHA256_SIZE   32
 
-typedef struct
-{
+typedef struct {
   uint32_t total[2];
   uint32_t state[8];
   uint8_t buffer[64];
@@ -147,15 +142,12 @@ void SHA256_Final(uint8_t *digest, SHA256_CTX *);
 
 #define SHA512_SIZE   64
 
-typedef struct
-{
-  union
-  {
+typedef struct {
+  union {
     uint64_t h[8];
     uint8_t digest[64];
   } h_dig;
-  union
-  {
+  union {
     uint64_t w[80];
     uint8_t buffer[128];
   } w_buf;
@@ -184,8 +176,7 @@ void SHA384_Final(uint8_t *digest, SHA384_CTX *);
 
 #define MD5_SIZE    16
 
-typedef struct
-{
+typedef struct {
   uint32_t state[4];        /* state (ABCD) */
   uint32_t count[2];        /* number of bits, modulo 2^64 (lsb first) */
   uint8_t buffer[64];       /* input buffer */
@@ -207,8 +198,7 @@ void hmac_sha1(const uint8_t *msg, int length, const uint8_t *key,
  * RSA declarations
  **************************************************************************/
 
-typedef struct
-{
+typedef struct {
   bigint *m;              /* modulus */
   bigint *e;              /* public exponent */
   bigint *d;              /* private exponent */
@@ -270,8 +260,7 @@ unsigned char * xbase64_decode(const char * data, size_t * out_len);
 /**************************************************************************
  * xtea declarations
  **************************************************************************/
-typedef struct
-{
+typedef struct {
   uint32_t k[4];
 } xtea_context;
 

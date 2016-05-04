@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -48,7 +48,7 @@ static void SHA1PadMessage(SHA1_CTX *ctx);
 static void SHA1ProcessMessageBlock(SHA1_CTX *ctx);
 
 /**
- * Initialize the SHA1 context 
+ * Initialize the SHA1 context
  */
 void SHA1_Init(SHA1_CTX *ctx)
 {
@@ -67,8 +67,7 @@ void SHA1_Init(SHA1_CTX *ctx)
  */
 void SHA1_Update(SHA1_CTX *ctx, const uint8_t *msg, int len)
 {
-    while (len--)
-    {
+    while (len--) {
         ctx->Message_Block[ctx->Message_Block_Index++] = (*msg & 0xFF);
         ctx->Length_Low += 8;
 
@@ -94,9 +93,8 @@ void SHA1_Final(uint8_t *digest, SHA1_CTX *ctx)
     ctx->Length_Low = 0;    /* and clear length */
     ctx->Length_High = 0;
 
-    for  (i = 0; i < SHA1_SIZE; i++)
-    {
-        digest[i] = ctx->Intermediate_Hash[i>>2] >> 8 * ( 3 - ( i & 0x03 ) );
+    for  (i = 0; i < SHA1_SIZE; i++) {
+        digest[i] = ctx->Intermediate_Hash[i >> 2] >> 8 * ( 3 - ( i & 0x03 ) );
     }
 }
 
@@ -106,11 +104,11 @@ void SHA1_Final(uint8_t *digest, SHA1_CTX *ctx)
 static void SHA1ProcessMessageBlock(SHA1_CTX *ctx)
 {
     const uint32_t K[] =    {       /* Constants defined in SHA-1   */
-                            0x5A827999,
-                            0x6ED9EBA1,
-                            0x8F1BBCDC,
-                            0xCA62C1D6
-                            };
+        0x5A827999,
+        0x6ED9EBA1,
+        0x8F1BBCDC,
+        0xCA62C1D6
+    };
     int        t;                 /* Loop counter                */
     uint32_t      temp;              /* Temporary word value        */
     uint32_t      W[80];             /* Word sequence               */
@@ -119,17 +117,15 @@ static void SHA1ProcessMessageBlock(SHA1_CTX *ctx)
     /*
      *  Initialize the first 16 words in the array W
      */
-    for  (t = 0; t < 16; t++)
-    {
+    for  (t = 0; t < 16; t++) {
         W[t] = ctx->Message_Block[t * 4] << 24;
         W[t] |= ctx->Message_Block[t * 4 + 1] << 16;
         W[t] |= ctx->Message_Block[t * 4 + 2] << 8;
         W[t] |= ctx->Message_Block[t * 4 + 3];
     }
 
-    for (t = 16; t < 80; t++)
-    {
-       W[t] = SHA1CircularShift(1,W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16]);
+    for (t = 16; t < 80; t++) {
+        W[t] = SHA1CircularShift(1, W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16]);
     }
 
     A = ctx->Intermediate_Hash[0];
@@ -138,45 +134,41 @@ static void SHA1ProcessMessageBlock(SHA1_CTX *ctx)
     D = ctx->Intermediate_Hash[3];
     E = ctx->Intermediate_Hash[4];
 
-    for (t = 0; t < 20; t++)
-    {
-        temp =  SHA1CircularShift(5,A) +
+    for (t = 0; t < 20; t++) {
+        temp =  SHA1CircularShift(5, A) +
                 ((B & C) | ((~B) & D)) + E + W[t] + K[0];
         E = D;
         D = C;
-        C = SHA1CircularShift(30,B);
+        C = SHA1CircularShift(30, B);
 
         B = A;
         A = temp;
     }
 
-    for (t = 20; t < 40; t++)
-    {
-        temp = SHA1CircularShift(5,A) + (B ^ C ^ D) + E + W[t] + K[1];
+    for (t = 20; t < 40; t++) {
+        temp = SHA1CircularShift(5, A) + (B ^ C ^ D) + E + W[t] + K[1];
         E = D;
         D = C;
-        C = SHA1CircularShift(30,B);
+        C = SHA1CircularShift(30, B);
         B = A;
         A = temp;
     }
 
-    for (t = 40; t < 60; t++)
-    {
-        temp = SHA1CircularShift(5,A) +
+    for (t = 40; t < 60; t++) {
+        temp = SHA1CircularShift(5, A) +
                ((B & C) | (B & D) | (C & D)) + E + W[t] + K[2];
         E = D;
         D = C;
-        C = SHA1CircularShift(30,B);
+        C = SHA1CircularShift(30, B);
         B = A;
         A = temp;
     }
 
-    for (t = 60; t < 80; t++)
-    {
-        temp = SHA1CircularShift(5,A) + (B ^ C ^ D) + E + W[t] + K[3];
+    for (t = 60; t < 80; t++) {
+        temp = SHA1CircularShift(5, A) + (B ^ C ^ D) + E + W[t] + K[3];
         E = D;
         D = C;
-        C = SHA1CircularShift(30,B);
+        C = SHA1CircularShift(30, B);
         B = A;
         A = temp;
     }
@@ -209,26 +201,20 @@ static void SHA1PadMessage(SHA1_CTX *ctx)
      *  block, process it, and then continue padding into a second
      *  block.
      */
-    if (ctx->Message_Block_Index > 55)
-    {
+    if (ctx->Message_Block_Index > 55) {
         ctx->Message_Block[ctx->Message_Block_Index++] = 0x80;
-        while(ctx->Message_Block_Index < 64)
-        {
+        while (ctx->Message_Block_Index < 64) {
             ctx->Message_Block[ctx->Message_Block_Index++] = 0;
         }
 
         SHA1ProcessMessageBlock(ctx);
 
-        while (ctx->Message_Block_Index < 56)
-        {
+        while (ctx->Message_Block_Index < 56) {
             ctx->Message_Block[ctx->Message_Block_Index++] = 0;
         }
-    }
-    else
-    {
+    } else {
         ctx->Message_Block[ctx->Message_Block_Index++] = 0x80;
-        while(ctx->Message_Block_Index < 56)
-        {
+        while (ctx->Message_Block_Index < 56) {
 
             ctx->Message_Block[ctx->Message_Block_Index++] = 0;
         }

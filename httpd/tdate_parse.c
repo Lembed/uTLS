@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -36,20 +36,17 @@
 #include <time.h>
 #include "axhttp.h"
 
-struct day_mon_map 
-{
+struct day_mon_map {
     const char* s;
     uint8_t l;
 };
 
-static struct day_mon_map wday_tab[] = 
-{
+static struct day_mon_map wday_tab[] = {
     { "Sun", 0 }, { "Mon", 1 }, { "Tue", 2 }, { "Wed", 3 },
-    { "Thu", 4 }, { "Fri", 5 }, { "Sat", 6 }, 
+    { "Thu", 4 }, { "Fri", 5 }, { "Sat", 6 },
 };
 
-static struct day_mon_map mon_tab[] = 
-{
+static struct day_mon_map mon_tab[] = {
     { "Jan", 0 }, { "Feb", 1 }, { "Mar", 2 }, { "Apr", 3 },
     { "May", 4 }, { "Jun", 5 }, { "Jul", 6 }, { "Aug", 7 },
     { "Sep", 8 }, { "Oct", 9 }, { "Nov", 10 }, { "Dec", 11 },
@@ -62,20 +59,20 @@ static int day_mon_map_compare(const char *v1, const char *v2)
 
 void tdate_init(void)
 {
-    qsort(wday_tab, sizeof(wday_tab)/sizeof(struct day_mon_map),
-            sizeof(struct day_mon_map), 
-            (int (*)(const void *, const void *))day_mon_map_compare);
-    qsort(mon_tab, sizeof(mon_tab)/sizeof(struct day_mon_map),
-            sizeof(struct day_mon_map), 
-            (int (*)(const void *, const void *))day_mon_map_compare);
+    qsort(wday_tab, sizeof(wday_tab) / sizeof(struct day_mon_map),
+          sizeof(struct day_mon_map),
+          (int (*)(const void *, const void *))day_mon_map_compare);
+    qsort(mon_tab, sizeof(mon_tab) / sizeof(struct day_mon_map),
+          sizeof(struct day_mon_map),
+          (int (*)(const void *, const void *))day_mon_map_compare);
 }
 
-static int8_t day_mon_map_search(const char* str, 
-                            const struct day_mon_map* tab, int n)
+static int8_t day_mon_map_search(const char* str,
+                                 const struct day_mon_map* tab, int n)
 {
     struct day_mon_map *search = bsearch(&str, tab, n,
-            sizeof(struct day_mon_map), 
-                (int (*)(const void *, const void *))day_mon_map_compare);
+                                         sizeof(struct day_mon_map),
+                                         (int (*)(const void *, const void *))day_mon_map_compare);
     return search ? search->l : -1;
 }
 
@@ -90,13 +87,12 @@ time_t tdate_parse(const char* str)
 
     /* wdy, DD mth YY HH:MM:SS GMT */
     if (sscanf(str, "%3[a-zA-Z], %d %3[a-zA-Z] %d %d:%d:%d GMT",
-                str_wday, &tm_mday, str_mon, &tm_year, &tm_hour, &tm_min,
-                    &tm_sec) == 7)
-    {
-        int8_t tm_wday = day_mon_map_search(str_wday, wday_tab, 
-                        sizeof(wday_tab)/sizeof(struct day_mon_map));
-        int8_t tm_mon = day_mon_map_search(str_mon, mon_tab, 
-                        sizeof(mon_tab)/sizeof(struct day_mon_map));
+               str_wday, &tm_mday, str_mon, &tm_year, &tm_hour, &tm_min,
+               &tm_sec) == 7) {
+        int8_t tm_wday = day_mon_map_search(str_wday, wday_tab,
+                                            sizeof(wday_tab) / sizeof(struct day_mon_map));
+        int8_t tm_mon = day_mon_map_search(str_mon, mon_tab,
+                                           sizeof(mon_tab) / sizeof(struct day_mon_map));
 
         if (tm_wday < 0 || tm_mon < 0)
             return -1;

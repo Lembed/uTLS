@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007-2015, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -30,7 +30,7 @@
 
 /**
  * @file x509.c
- * 
+ *
  * Certificate processing.
  */
 
@@ -50,8 +50,8 @@ static const uint8_t *get_signature(const uint8_t *asn1_sig, int *len)
     int offset = 0;
     const uint8_t *ptr = NULL;
 
-    if (asn1_next_obj(asn1_sig, &offset, ASN1_SEQUENCE) < 0 || 
-            asn1_skip_obj(asn1_sig, &offset, ASN1_SEQUENCE))
+    if (asn1_next_obj(asn1_sig, &offset, ASN1_SEQUENCE) < 0 ||
+        asn1_skip_obj(asn1_sig, &offset, ASN1_SEQUENCE))
         goto end_get_sig;
 
     if (asn1_sig[offset++] != ASN1_OCTET_STRING)
@@ -80,7 +80,7 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
     x509_ctx = *ctx;
 
     /* get the certificate size */
-    asn1_skip_obj(cert, &cert_size, ASN1_SEQUENCE); 
+    asn1_skip_obj(cert, &cert_size, ASN1_SEQUENCE);
 
     if (asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0)
         goto end_cert;
@@ -92,28 +92,25 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
     if (asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0)
         goto end_cert;
 
-    if (cert[offset] == ASN1_EXPLICIT_TAG)   /* optional version */
-    {
+    if (cert[offset] == ASN1_EXPLICIT_TAG) { /* optional version */
         if (asn1_version(cert, &offset, x509_ctx))
             goto end_cert;
     }
 
-    if (asn1_skip_obj(cert, &offset, ASN1_INTEGER) || /* serial number */ 
-            asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0)
+    if (asn1_skip_obj(cert, &offset, ASN1_INTEGER) || /* serial number */
+        asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0)
         goto end_cert;
 
     /* make sure the signature is ok */
-    if (asn1_signature_type(cert, &offset, x509_ctx))
-    {
+    if (asn1_signature_type(cert, &offset, x509_ctx)) {
         ret = X509_VFY_ERROR_UNSUPPORTED_DIGEST;
         goto end_cert;
     }
 
-    if (asn1_name(cert, &offset, x509_ctx->ca_cert_dn) || 
-            asn1_validity(cert, &offset, x509_ctx) ||
-            asn1_name(cert, &offset, x509_ctx->cert_dn) ||
-            asn1_public_key(cert, &offset, x509_ctx))
-    {
+    if (asn1_name(cert, &offset, x509_ctx->ca_cert_dn) ||
+        asn1_validity(cert, &offset, x509_ctx) ||
+        asn1_name(cert, &offset, x509_ctx->cert_dn) ||
+        asn1_public_key(cert, &offset, x509_ctx)) {
         goto end_cert;
     }
 
@@ -121,100 +118,88 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
 
 #ifdef CONFIG_SSL_CERT_VERIFICATION /* only care if doing verification */
     /* use the appropriate signature algorithm */
-    switch (x509_ctx->sig_type)
-    {
-        case SIG_TYPE_MD5:
-        {
-            MD5_CTX md5_ctx;
-            uint8_t md5_dgst[MD5_SIZE];
-            MD5_Init(&md5_ctx);
-            MD5_Update(&md5_ctx, &cert[begin_tbs], end_tbs-begin_tbs);
-            MD5_Final(md5_dgst, &md5_ctx);
-            x509_ctx->digest = bi_import(bi_ctx, md5_dgst, MD5_SIZE);
-        }
-            break;
+    switch (x509_ctx->sig_type) {
+    case SIG_TYPE_MD5: {
+        MD5_CTX md5_ctx;
+        uint8_t md5_dgst[MD5_SIZE];
+        MD5_Init(&md5_ctx);
+        MD5_Update(&md5_ctx, &cert[begin_tbs], end_tbs - begin_tbs);
+        MD5_Final(md5_dgst, &md5_ctx);
+        x509_ctx->digest = bi_import(bi_ctx, md5_dgst, MD5_SIZE);
+    }
+    break;
 
-        case SIG_TYPE_SHA1:
-        {
-            SHA1_CTX sha_ctx;
-            uint8_t sha_dgst[SHA1_SIZE];
-            SHA1_Init(&sha_ctx);
-            SHA1_Update(&sha_ctx, &cert[begin_tbs], end_tbs-begin_tbs);
-            SHA1_Final(sha_dgst, &sha_ctx);
-            x509_ctx->digest = bi_import(bi_ctx, sha_dgst, SHA1_SIZE);
-        }
-            break;
+    case SIG_TYPE_SHA1: {
+        SHA1_CTX sha_ctx;
+        uint8_t sha_dgst[SHA1_SIZE];
+        SHA1_Init(&sha_ctx);
+        SHA1_Update(&sha_ctx, &cert[begin_tbs], end_tbs - begin_tbs);
+        SHA1_Final(sha_dgst, &sha_ctx);
+        x509_ctx->digest = bi_import(bi_ctx, sha_dgst, SHA1_SIZE);
+    }
+    break;
 
-        case SIG_TYPE_SHA256:
-        {
-            SHA256_CTX sha256_ctx;
-            uint8_t sha256_dgst[SHA256_SIZE];
-            SHA256_Init(&sha256_ctx);
-            SHA256_Update(&sha256_ctx, &cert[begin_tbs], end_tbs-begin_tbs);
-            SHA256_Final(sha256_dgst, &sha256_ctx);
-            x509_ctx->digest = bi_import(bi_ctx, sha256_dgst, SHA256_SIZE);
-        }
-            break;
+    case SIG_TYPE_SHA256: {
+        SHA256_CTX sha256_ctx;
+        uint8_t sha256_dgst[SHA256_SIZE];
+        SHA256_Init(&sha256_ctx);
+        SHA256_Update(&sha256_ctx, &cert[begin_tbs], end_tbs - begin_tbs);
+        SHA256_Final(sha256_dgst, &sha256_ctx);
+        x509_ctx->digest = bi_import(bi_ctx, sha256_dgst, SHA256_SIZE);
+    }
+    break;
 
-        case SIG_TYPE_SHA384:
-        {
-            SHA384_CTX sha384_ctx;
-            uint8_t sha384_dgst[SHA384_SIZE];
-            SHA384_Init(&sha384_ctx);
-            SHA384_Update(&sha384_ctx, &cert[begin_tbs], end_tbs-begin_tbs);
-            SHA384_Final(sha384_dgst, &sha384_ctx);
-            x509_ctx->digest = bi_import(bi_ctx, sha384_dgst, SHA384_SIZE);
-        }
-            break;
+    case SIG_TYPE_SHA384: {
+        SHA384_CTX sha384_ctx;
+        uint8_t sha384_dgst[SHA384_SIZE];
+        SHA384_Init(&sha384_ctx);
+        SHA384_Update(&sha384_ctx, &cert[begin_tbs], end_tbs - begin_tbs);
+        SHA384_Final(sha384_dgst, &sha384_ctx);
+        x509_ctx->digest = bi_import(bi_ctx, sha384_dgst, SHA384_SIZE);
+    }
+    break;
 
-        case SIG_TYPE_SHA512:
-        {
-            SHA512_CTX sha512_ctx;
-            uint8_t sha512_dgst[SHA512_SIZE];
-            SHA512_Init(&sha512_ctx);
-            SHA512_Update(&sha512_ctx, &cert[begin_tbs], end_tbs-begin_tbs);
-            SHA512_Final(sha512_dgst, &sha512_ctx);
-            x509_ctx->digest = bi_import(bi_ctx, sha512_dgst, SHA512_SIZE);
-        }
-            break;
+    case SIG_TYPE_SHA512: {
+        SHA512_CTX sha512_ctx;
+        uint8_t sha512_dgst[SHA512_SIZE];
+        SHA512_Init(&sha512_ctx);
+        SHA512_Update(&sha512_ctx, &cert[begin_tbs], end_tbs - begin_tbs);
+        SHA512_Final(sha512_dgst, &sha512_ctx);
+        x509_ctx->digest = bi_import(bi_ctx, sha512_dgst, SHA512_SIZE);
+    }
+    break;
     }
 
-    if (cert[offset] == ASN1_V3_DATA)
-    {
+    if (cert[offset] == ASN1_V3_DATA) {
         int suboffset;
 
         ++offset;
         get_asn1_length(cert, &offset);
 
-        if ((suboffset = asn1_find_subjectaltname(cert, offset)) > 0)
-        {
-            if (asn1_next_obj(cert, &suboffset, ASN1_OCTET_STRING) > 0)
-            {
+        if ((suboffset = asn1_find_subjectaltname(cert, offset)) > 0) {
+            if (asn1_next_obj(cert, &suboffset, ASN1_OCTET_STRING) > 0) {
                 int altlen;
 
-                if ((altlen = asn1_next_obj(cert, 
-                                            &suboffset, ASN1_SEQUENCE)) > 0)
-                {
+                if ((altlen = asn1_next_obj(cert,
+                                            &suboffset, ASN1_SEQUENCE)) > 0) {
                     int endalt = suboffset + altlen;
                     int totalnames = 0;
 
-                    while (suboffset < endalt)
-                    {
+                    while (suboffset < endalt) {
                         int type = cert[suboffset++];
                         int dnslen = get_asn1_length(cert, &suboffset);
 
-                        if (type == ASN1_CONTEXT_DNSNAME)
-                        {
+                        if (type == ASN1_CONTEXT_DNSNAME) {
                             x509_ctx->subject_alt_dnsnames = (char**)
-                                    realloc(x509_ctx->subject_alt_dnsnames, 
-                                       (totalnames + 2) * sizeof(char*));
-                            x509_ctx->subject_alt_dnsnames[totalnames] = 
-                                    (char*)malloc(dnslen + 1);
-                            x509_ctx->subject_alt_dnsnames[totalnames+1] = NULL;
-                            memcpy(x509_ctx->subject_alt_dnsnames[totalnames], 
-                                    cert + suboffset, dnslen);
+                                                             realloc(x509_ctx->subject_alt_dnsnames,
+                                                                     (totalnames + 2) * sizeof(char*));
+                            x509_ctx->subject_alt_dnsnames[totalnames] =
+                                (char*)malloc(dnslen + 1);
+                            x509_ctx->subject_alt_dnsnames[totalnames + 1] = NULL;
+                            memcpy(x509_ctx->subject_alt_dnsnames[totalnames],
+                                   cert + suboffset, dnslen);
                             x509_ctx->subject_alt_dnsnames[
-                                    totalnames][dnslen] = 0;
+                                totalnames][dnslen] = 0;
                             ++totalnames;
                         }
 
@@ -226,22 +211,20 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
     }
 
     offset = end_tbs;   /* skip the rest of v3 data */
-    if (asn1_skip_obj(cert, &offset, ASN1_SEQUENCE) || 
-            asn1_signature(cert, &offset, x509_ctx))
+    if (asn1_skip_obj(cert, &offset, ASN1_SEQUENCE) ||
+        asn1_signature(cert, &offset, x509_ctx))
         goto end_cert;
 #endif
     ret = X509_OK;
 end_cert:
-    if (len)
-    {
+    if (len) {
         *len = cert_size;
     }
 
-    if (ret)
-    {
+    if (ret) {
 #ifdef CONFIG_SSL_FULL_MODE
         printf("Error: Invalid X509 ASN.1 file (%s)\n",
-                        x509_display_error(ret));
+               x509_display_error(ret));
 #endif
         x509_free(x509_ctx);
         *ctx = NULL;
@@ -261,22 +244,19 @@ void x509_free(X509_CTX *x509_ctx)
     if (x509_ctx == NULL)       /* if already null, then don't bother */
         return;
 
-    for (i = 0; i < X509_NUM_DN_TYPES; i++)
-    {
+    for (i = 0; i < X509_NUM_DN_TYPES; i++) {
         free(x509_ctx->ca_cert_dn[i]);
         free(x509_ctx->cert_dn[i]);
     }
 
     free(x509_ctx->signature);
 
-#ifdef CONFIG_SSL_CERT_VERIFICATION 
-    if (x509_ctx->digest)
-    {
+#ifdef CONFIG_SSL_CERT_VERIFICATION
+    if (x509_ctx->digest) {
         bi_free(x509_ctx->rsa_ctx->bi_ctx, x509_ctx->digest);
     }
 
-    if (x509_ctx->subject_alt_dnsnames)
-    {
+    if (x509_ctx->subject_alt_dnsnames) {
         for (i = 0; x509_ctx->subject_alt_dnsnames[i]; ++i)
             free(x509_ctx->subject_alt_dnsnames[i]);
 
@@ -295,7 +275,7 @@ void x509_free(X509_CTX *x509_ctx)
  * Take a signature and decrypt it.
  */
 static bigint *sig_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len,
-        bigint *modulus, bigint *pub_exp)
+                          bigint *modulus, bigint *pub_exp)
 {
     int i, size;
     bigint *decrypted_bi, *dat_bi;
@@ -317,13 +297,11 @@ static bigint *sig_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len,
     size = sig_len - i;
 
     /* get only the bit we want */
-    if (size > 0)
-    {
+    if (size > 0) {
         int len;
         const uint8_t *sig_ptr = get_signature(&block[i], &len);
 
-        if (sig_ptr)
-        {
+        if (sig_ptr) {
             bir = bi_import(ctx, sig_ptr, len);
         }
     }
@@ -344,7 +322,7 @@ static bigint *sig_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len,
  * - The certificate chain is valid.
  * - The signature of the certificate is valid.
  */
-int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert) 
+int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
 {
     int ret = X509_OK, i = 0;
     bigint *cert_sig;
@@ -355,16 +333,14 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
     struct timeval tv;
     uint8_t is_self_signed = 0;
 
-    if (cert == NULL)
-    {
-        ret = X509_VFY_ERROR_NO_TRUSTED_CERT;       
+    if (cert == NULL) {
+        ret = X509_VFY_ERROR_NO_TRUSTED_CERT;
         goto end_verify;
     }
 
-    /* a self-signed certificate that is not in the CA store - use this 
+    /* a self-signed certificate that is not in the CA store - use this
        to check the signature */
-    if (asn1_compare_dn(cert->ca_cert_dn, cert->cert_dn) == 0)
-    {
+    if (asn1_compare_dn(cert->ca_cert_dn, cert->cert_dn) == 0) {
         is_self_signed = 1;
         ctx = cert->rsa_ctx->bi_ctx;
         mod = cert->rsa_ctx->m;
@@ -374,15 +350,13 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
     gettimeofday(&tv, NULL);
 
     /* check the not before date */
-    if (tv.tv_sec < cert->not_before)
-    {
+    if (tv.tv_sec < cert->not_before) {
         ret = X509_VFY_ERROR_NOT_YET_VALID;
         goto end_verify;
     }
 
     /* check the not after date */
-    if (tv.tv_sec > cert->not_after)
-    {
+    if (tv.tv_sec > cert->not_after) {
         ret = X509_VFY_ERROR_EXPIRED;
         goto end_verify;
     }
@@ -390,16 +364,12 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
     next_cert = cert->next;
 
     /* last cert in the chain - look for a trusted cert */
-    if (next_cert == NULL)
-    {
-       if (ca_cert_ctx != NULL) 
-       {
+    if (next_cert == NULL) {
+        if (ca_cert_ctx != NULL) {
             /* go thu the CA store */
-            while (i < CONFIG_X509_MAX_CA_CERTS && ca_cert_ctx->cert[i])
-            {
+            while (i < CONFIG_X509_MAX_CA_CERTS && ca_cert_ctx->cert[i]) {
                 if (asn1_compare_dn(cert->ca_cert_dn,
-                                            ca_cert_ctx->cert[i]->cert_dn) == 0)
-                {
+                                    ca_cert_ctx->cert[i]->cert_dn) == 0) {
                     /* use this CA certificate for signature verification */
                     match_ca_cert = 1;
                     ctx = ca_cert_ctx->cert[i]->rsa_ctx->bi_ctx;
@@ -412,48 +382,39 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
             }
         }
 
-        /* couldn't find a trusted cert (& let self-signed errors 
+        /* couldn't find a trusted cert (& let self-signed errors
            be returned) */
-        if (!match_ca_cert && !is_self_signed)
-        {
-            ret = X509_VFY_ERROR_NO_TRUSTED_CERT;       
+        if (!match_ca_cert && !is_self_signed) {
+            ret = X509_VFY_ERROR_NO_TRUSTED_CERT;
             goto end_verify;
         }
-    }
-    else if (asn1_compare_dn(cert->ca_cert_dn, next_cert->cert_dn) != 0)
-    {
+    } else if (asn1_compare_dn(cert->ca_cert_dn, next_cert->cert_dn) != 0) {
         /* check the chain */
         ret = X509_VFY_ERROR_INVALID_CHAIN;
         goto end_verify;
-    }
-    else /* use the next certificate in the chain for signature verify */
-    {
+    } else { /* use the next certificate in the chain for signature verify */
         ctx = next_cert->rsa_ctx->bi_ctx;
         mod = next_cert->rsa_ctx->m;
         expn = next_cert->rsa_ctx->e;
     }
 
     /* cert is self signed */
-    if (!match_ca_cert && is_self_signed)
-    {
+    if (!match_ca_cert && is_self_signed) {
         ret = X509_VFY_ERROR_SELF_SIGNED;
         goto end_verify;
     }
 
     /* check the signature */
-    cert_sig = sig_verify(ctx, cert->signature, cert->sig_len, 
-                        bi_clone(ctx, mod), bi_clone(ctx, expn));
+    cert_sig = sig_verify(ctx, cert->signature, cert->sig_len,
+                          bi_clone(ctx, mod), bi_clone(ctx, expn));
 
-    if (cert_sig && cert->digest)
-    {
+    if (cert_sig && cert->digest) {
         if (bi_compare(cert_sig, cert->digest) != 0)
             ret = X509_VFY_ERROR_BAD_SIGNATURE;
 
 
         bi_free(ctx, cert_sig);
-    }
-    else
-    {
+    } else {
         ret = X509_VFY_ERROR_BAD_SIGNATURE;
     }
 
@@ -461,8 +422,7 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
         goto end_verify;
 
     /* go down the certificate chain using recursion. */
-    if (next_cert != NULL)
-    {
+    if (next_cert != NULL) {
         ret = x509_verify(ca_cert_ctx, next_cert);
     }
 
@@ -476,7 +436,7 @@ end_verify:
  * Used for diagnostics.
  */
 static const char *not_part_of_cert = "<Not Part Of Certificate>";
-void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx) 
+void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx)
 {
     if (cert == NULL)
         return;
@@ -484,62 +444,60 @@ void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx)
     printf("=== CERTIFICATE ISSUED TO ===\n");
     printf("Common Name (CN):\t\t");
     printf("%s\n", cert->cert_dn[X509_COMMON_NAME] ?
-                    cert->cert_dn[X509_COMMON_NAME] : not_part_of_cert);
+           cert->cert_dn[X509_COMMON_NAME] : not_part_of_cert);
 
     printf("Organization (O):\t\t");
     printf("%s\n", cert->cert_dn[X509_ORGANIZATION] ?
-        cert->cert_dn[X509_ORGANIZATION] : not_part_of_cert);
+           cert->cert_dn[X509_ORGANIZATION] : not_part_of_cert);
 
     printf("Organizational Unit (OU):\t");
     printf("%s\n", cert->cert_dn[X509_ORGANIZATIONAL_UNIT] ?
-        cert->cert_dn[X509_ORGANIZATIONAL_UNIT] : not_part_of_cert);
+           cert->cert_dn[X509_ORGANIZATIONAL_UNIT] : not_part_of_cert);
 
     printf("=== CERTIFICATE ISSUED BY ===\n");
     printf("Common Name (CN):\t\t");
     printf("%s\n", cert->ca_cert_dn[X509_COMMON_NAME] ?
-                    cert->ca_cert_dn[X509_COMMON_NAME] : not_part_of_cert);
+           cert->ca_cert_dn[X509_COMMON_NAME] : not_part_of_cert);
 
     printf("Organization (O):\t\t");
     printf("%s\n", cert->ca_cert_dn[X509_ORGANIZATION] ?
-        cert->ca_cert_dn[X509_ORGANIZATION] : not_part_of_cert);
+           cert->ca_cert_dn[X509_ORGANIZATION] : not_part_of_cert);
 
     printf("Organizational Unit (OU):\t");
     printf("%s\n", cert->ca_cert_dn[X509_ORGANIZATIONAL_UNIT] ?
-        cert->ca_cert_dn[X509_ORGANIZATIONAL_UNIT] : not_part_of_cert);
+           cert->ca_cert_dn[X509_ORGANIZATIONAL_UNIT] : not_part_of_cert);
 
     printf("Not Before:\t\t\t%s", ctime(&cert->not_before));
     printf("Not After:\t\t\t%s", ctime(&cert->not_after));
-    printf("RSA bitsize:\t\t\t%d\n", cert->rsa_ctx->num_octets*8);
+    printf("RSA bitsize:\t\t\t%d\n", cert->rsa_ctx->num_octets * 8);
     printf("Sig Type:\t\t\t");
-    switch (cert->sig_type)
-    {
-        case SIG_TYPE_MD2:
-            printf("MD2\n");
-            break;
-        case SIG_TYPE_MD5:
-            printf("MD5\n");
-            break;
-        case SIG_TYPE_SHA1:
-            printf("SHA1\n");
-            break;
-        case SIG_TYPE_SHA256:
-            printf("SHA256\n");
-            break;
-        case SIG_TYPE_SHA384:
-            printf("SHA384\n");
-            break;
-        case SIG_TYPE_SHA512:
-            printf("SHA512\n");
-            break;
-        default:
-            printf("Unrecognized: %d\n", cert->sig_type);
-            break;
+    switch (cert->sig_type) {
+    case SIG_TYPE_MD2:
+        printf("MD2\n");
+        break;
+    case SIG_TYPE_MD5:
+        printf("MD5\n");
+        break;
+    case SIG_TYPE_SHA1:
+        printf("SHA1\n");
+        break;
+    case SIG_TYPE_SHA256:
+        printf("SHA256\n");
+        break;
+    case SIG_TYPE_SHA384:
+        printf("SHA384\n");
+        break;
+    case SIG_TYPE_SHA512:
+        printf("SHA512\n");
+        break;
+    default:
+        printf("Unrecognized: %d\n", cert->sig_type);
+        break;
     }
 
-    if (ca_cert_ctx)
-    {
+    if (ca_cert_ctx) {
         printf("Verify:\t\t\t\t%s\n",
-                x509_display_error(x509_verify(ca_cert_ctx, cert)));
+               x509_display_error(x509_verify(ca_cert_ctx, cert)));
     }
 
 #if 0
@@ -548,8 +506,7 @@ void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx)
     bi_print("Pub Exp", cert->rsa_ctx->e);
 #endif
 
-    if (ca_cert_ctx)
-    {
+    if (ca_cert_ctx) {
         x509_print(cert->next, ca_cert_ctx);
     }
 
@@ -558,40 +515,39 @@ void x509_print(const X509_CTX *cert, CA_CERT_CTX *ca_cert_ctx)
 
 const char * x509_display_error(int error)
 {
-    switch (error)
-    {
-        case X509_OK:
-            return "Certificate verify successful";
+    switch (error) {
+    case X509_OK:
+        return "Certificate verify successful";
 
-        case X509_NOT_OK:
-            return "X509 not ok";
+    case X509_NOT_OK:
+        return "X509 not ok";
 
-        case X509_VFY_ERROR_NO_TRUSTED_CERT:
-            return "No trusted cert is available";
+    case X509_VFY_ERROR_NO_TRUSTED_CERT:
+        return "No trusted cert is available";
 
-        case X509_VFY_ERROR_BAD_SIGNATURE:
-            return "Bad signature";
+    case X509_VFY_ERROR_BAD_SIGNATURE:
+        return "Bad signature";
 
-        case X509_VFY_ERROR_NOT_YET_VALID:
-            return "Cert is not yet valid";
+    case X509_VFY_ERROR_NOT_YET_VALID:
+        return "Cert is not yet valid";
 
-        case X509_VFY_ERROR_EXPIRED:
-            return "Cert has expired";
+    case X509_VFY_ERROR_EXPIRED:
+        return "Cert has expired";
 
-        case X509_VFY_ERROR_SELF_SIGNED:
-            return "Cert is self-signed";
+    case X509_VFY_ERROR_SELF_SIGNED:
+        return "Cert is self-signed";
 
-        case X509_VFY_ERROR_INVALID_CHAIN:
-            return "Chain is invalid (check order of certs)";
+    case X509_VFY_ERROR_INVALID_CHAIN:
+        return "Chain is invalid (check order of certs)";
 
-        case X509_VFY_ERROR_UNSUPPORTED_DIGEST:
-            return "Unsupported digest";
+    case X509_VFY_ERROR_UNSUPPORTED_DIGEST:
+        return "Unsupported digest";
 
-        case X509_INVALID_PRIV_KEY:
-            return "Invalid private key";
+    case X509_INVALID_PRIV_KEY:
+        return "Invalid private key";
 
-        default:
-            return "Unknown";
+    default:
+        return "Unknown";
     }
 }
 #endif      /* CONFIG_SSL_FULL_MODE */

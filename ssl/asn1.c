@@ -46,37 +46,31 @@
 /* sha256WithRSAEncryption (11) */
 /* sha384WithRSAEncryption (12) */
 /* sha512WithRSAEncryption (13) */
-static const uint8_t sig_oid_prefix[] =
-{
+static const uint8_t sig_oid_prefix[] = {
     0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01
 };
 
 /* 1.3.14.3.2.29 SHA1 with RSA signature */
-static const uint8_t sig_sha1WithRSAEncrypt[] =
-{
+static const uint8_t sig_sha1WithRSAEncrypt[] = {
     0x2b, 0x0e, 0x03, 0x02, 0x1d
 };
 
 /* 2.16.840.1.101.3.4.2.1 SHA-256 */
-static const uint8_t sig_sha256[] =
-{
+static const uint8_t sig_sha256[] = {
     0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01
 };
 
 /* 2.16.840.1.101.3.4.2.2 SHA-384 */
-static const uint8_t sig_sha384[] =
-{
+static const uint8_t sig_sha384[] = {
     0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02
 };
 
 /* 2.16.840.1.101.3.4.2.3 SHA-512 */
-static const uint8_t sig_sha512[] =
-{
+static const uint8_t sig_sha512[] = {
     0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03
 };
 
-static const uint8_t sig_subject_alt_name[] =
-{
+static const uint8_t sig_subject_alt_name[] = {
     0x55, 0x1d, 0x11
 };
 
@@ -88,19 +82,15 @@ uint32_t get_asn1_length(const uint8_t *buf, int *offset)
     int i;
     uint32_t len;
 
-    if (!(buf[*offset] & 0x80)) /* short form */
-    {
+    if (!(buf[*offset] & 0x80)) { /* short form */
         len = buf[(*offset)++];
-    }
-    else  /* long form */
-    {
+    } else { /* long form */
         int length_bytes = buf[(*offset)++] & 0x7f;
         if (length_bytes > 4)   /* limit number of bytes */
             return 0;
 
         len = 0;
-        for (i = 0; i < length_bytes; i++)
-        {
+        for (i = 0; i < length_bytes; i++) {
             len <<= 8;
             len += buf[(*offset)++];
         }
@@ -148,8 +138,7 @@ int asn1_get_int(const uint8_t *buf, int *offset, uint8_t **object)
     if ((len = asn1_next_obj(buf, offset, ASN1_INTEGER)) < 0)
         goto end_int_array;
 
-    if (len > 1 && buf[*offset] == 0x00)    /* ignore the negative byte */
-    {
+    if (len > 1 && buf[*offset] == 0x00) {  /* ignore the negative byte */
         len--;
         (*offset)++;
     }
@@ -176,8 +165,7 @@ int asn1_get_private_key(const uint8_t *buf, int len, RSA_CTX **rsa_ctx)
 #endif
 
     /* not in der format */
-    if (buf[0] != ASN1_SEQUENCE) /* basic sanity check */
-    {
+    if (buf[0] != ASN1_SEQUENCE) { /* basic sanity check */
 #ifdef CONFIG_SSL_FULL_MODE
         printf("Error: This is not a valid ASN.1 file\n");
 #endif
@@ -233,8 +221,7 @@ static int asn1_get_utc_time(const uint8_t *buf, int *offset, time_t *t)
     struct tm tm;
 
     /* see http://tools.ietf.org/html/rfc5280#section-4.1.2.5 */
-    if (buf[*offset] == ASN1_UTC_TIME)
-    {
+    if (buf[*offset] == ASN1_UTC_TIME) {
         (*offset)++;
 
         len = get_asn1_length(buf, offset);
@@ -243,8 +230,7 @@ static int asn1_get_utc_time(const uint8_t *buf, int *offset, time_t *t)
         memset(&tm, 0, sizeof(struct tm));
         tm.tm_year = (buf[t_offset] - '0') * 10 + (buf[t_offset + 1] - '0');
 
-        if (tm.tm_year <= 50)    /* 1951-2050 thing */
-        {
+        if (tm.tm_year <= 50) {  /* 1951-2050 thing */
             tm.tm_year += 100;
         }
 
@@ -253,9 +239,7 @@ static int asn1_get_utc_time(const uint8_t *buf, int *offset, time_t *t)
         *t = mktime(&tm);
         *offset += len;
         ret = X509_OK;
-    }
-    else if (buf[*offset] == ASN1_GENERALIZED_TIME)
-    {
+    } else if (buf[*offset] == ASN1_GENERALIZED_TIME) {
         (*offset)++;
 
         len = get_asn1_length(buf, offset);
@@ -266,14 +250,11 @@ static int asn1_get_utc_time(const uint8_t *buf, int *offset, time_t *t)
                     (buf[t_offset + 1] - '0') * 100 + (buf[t_offset + 2] - '0') * 10 +
                     (buf[t_offset + 3] - '0'));
 
-        if (abs_year <= 1901)
-        {
+        if (abs_year <= 1901) {
             tm.tm_year = 1;
             tm.tm_mon = 0;
             tm.tm_mday = 1;
-        }
-        else
-        {
+        } else {
             tm.tm_year = abs_year - 1900;
             tm.tm_mon = (buf[t_offset + 4] - '0') * 10 + (buf[t_offset + 5] - '0') - 1;
             tm.tm_mday = (buf[t_offset + 6] - '0') * 10 + (buf[t_offset + 7] - '0');
@@ -331,8 +312,7 @@ static int asn1_get_oid_x520(const uint8_t *buf, int *offset)
        components we are interested in. */
     if (len == 3 && buf[(*offset)++] == 0x55 && buf[(*offset)++] == 0x04)
         dn_type = buf[(*offset)++];
-    else
-    {
+    else {
         *offset += len;     /* skip over it */
     }
 
@@ -350,17 +330,16 @@ static int asn1_get_printable_str(const uint8_t *buf, int *offset, char **str)
 
     /* some certs have this awful crud in them for some reason */
     if (asn1_type != ASN1_PRINTABLE_STR &&
-            asn1_type != ASN1_PRINTABLE_STR2 &&
-            asn1_type != ASN1_TELETEX_STR &&
-            asn1_type != ASN1_IA5_STR &&
-            asn1_type != ASN1_UNICODE_STR)
+        asn1_type != ASN1_PRINTABLE_STR2 &&
+        asn1_type != ASN1_TELETEX_STR &&
+        asn1_type != ASN1_IA5_STR &&
+        asn1_type != ASN1_UNICODE_STR)
         goto end_pnt_str;
 
     (*offset)++;
     len = get_asn1_length(buf, offset);
 
-    if (asn1_type == ASN1_UNICODE_STR)
-    {
+    if (asn1_type == ASN1_UNICODE_STR) {
         int i;
         *str = (char *)malloc(len / 2 + 1); /* allow for null */
 
@@ -368,9 +347,7 @@ static int asn1_get_printable_str(const uint8_t *buf, int *offset, char **str)
             (*str)[i / 2] = buf[*offset + i + 1];
 
         (*str)[len / 2] = 0;                /* null terminate */
-    }
-    else
-    {
+    } else {
         *str = (char *)malloc(len + 1);     /* allow for null */
         memcpy(*str, &buf[*offset], len);
         (*str)[len] = 0;                    /* null terminate */
@@ -394,29 +371,24 @@ int asn1_name(const uint8_t *cert, int *offset, char *dn[])
     if (asn1_next_obj(cert, offset, ASN1_SEQUENCE) < 0)
         goto end_name;
 
-    while (asn1_next_obj(cert, offset, ASN1_SET) >= 0)
-    {
+    while (asn1_next_obj(cert, offset, ASN1_SET) >= 0) {
         int i, found = 0;
 
         if (asn1_next_obj(cert, offset, ASN1_SEQUENCE) < 0 ||
-                (dn_type = asn1_get_oid_x520(cert, offset)) < 0)
+            (dn_type = asn1_get_oid_x520(cert, offset)) < 0)
             goto end_name;
 
         tmp = NULL;
 
-        if (asn1_get_printable_str(cert, offset, &tmp) < 0)
-        {
+        if (asn1_get_printable_str(cert, offset, &tmp) < 0) {
             free(tmp);
             goto end_name;
         }
 
         /* find the distinguished named type */
-        for (i = 0; i < X509_NUM_DN_TYPES; i++)
-        {
-            if (dn_type == g_dn_types[i])
-            {
-                if (dn[i] == NULL)
-                {
+        for (i = 0; i < X509_NUM_DN_TYPES; i++) {
+            if (dn_type == g_dn_types[i]) {
+                if (dn[i] == NULL) {
                     dn[i] = tmp;
                     found = 1;
                     break;
@@ -424,8 +396,7 @@ int asn1_name(const uint8_t *cert, int *offset, char *dn[])
             }
         }
 
-        if (found == 0) /* not found so get rid of it */
-        {
+        if (found == 0) { /* not found so get rid of it */
             free(tmp);
         }
     }
@@ -444,8 +415,8 @@ int asn1_public_key(const uint8_t *cert, int *offset, X509_CTX *x509_ctx)
     uint8_t *modulus = NULL, *pub_exp = NULL;
 
     if (asn1_next_obj(cert, offset, ASN1_SEQUENCE) < 0 ||
-            asn1_skip_obj(cert, offset, ASN1_SEQUENCE) ||
-            asn1_next_obj(cert, offset, ASN1_BIT_STRING) < 0)
+        asn1_skip_obj(cert, offset, ASN1_SEQUENCE) ||
+        asn1_next_obj(cert, offset, ASN1_BIT_STRING) < 0)
         goto end_pub_key;
 
     (*offset)++;        /* ignore the padding bit field */
@@ -514,8 +485,7 @@ void remove_ca_certs(CA_CERT_CTX *ca_cert_ctx)
     if (ca_cert_ctx == NULL)
         return;
 
-    while (i < CONFIG_X509_MAX_CA_CERTS && ca_cert_ctx->cert[i])
-    {
+    while (i < CONFIG_X509_MAX_CA_CERTS && ca_cert_ctx->cert[i]) {
         x509_free(ca_cert_ctx->cert[i]);
         ca_cert_ctx->cert[i++] = NULL;
     }
@@ -531,8 +501,7 @@ int asn1_compare_dn(char * const dn1[], char * const dn2[])
 {
     int i;
 
-    for (i = 0; i < X509_NUM_DN_TYPES; i++)
-    {
+    for (i = 0; i < X509_NUM_DN_TYPES; i++) {
         if (asn1_compare_dn_comp(dn1[i], dn2[i]))
             return 1;
     }
@@ -544,24 +513,20 @@ int asn1_find_oid(const uint8_t* cert, int* offset,
                   const uint8_t* oid, int oid_length)
 {
     int seqlen;
-    if ((seqlen = asn1_next_obj(cert, offset, ASN1_SEQUENCE)) > 0)
-    {
+    if ((seqlen = asn1_next_obj(cert, offset, ASN1_SEQUENCE)) > 0) {
         int end = *offset + seqlen;
 
-        while (*offset < end)
-        {
+        while (*offset < end) {
             int type = cert[(*offset)++];
             int length = get_asn1_length(cert, offset);
             int noffset = *offset + length;
 
-            if (type == ASN1_SEQUENCE)
-            {
+            if (type == ASN1_SEQUENCE) {
                 type = cert[(*offset)++];
                 length = get_asn1_length(cert, offset);
 
                 if (type == ASN1_OID && length == oid_length &&
-                        memcmp(cert + *offset, oid, oid_length) == 0)
-                {
+                    memcmp(cert + *offset, oid, oid_length) == 0) {
                     *offset += oid_length;
                     return 1;
                 }
@@ -577,8 +542,7 @@ int asn1_find_oid(const uint8_t* cert, int* offset,
 int asn1_find_subjectaltname(const uint8_t* cert, int offset)
 {
     if (asn1_find_oid(cert, &offset, sig_subject_alt_name,
-                      sizeof(sig_subject_alt_name)))
-    {
+                      sizeof(sig_subject_alt_name))) {
         return offset;
     }
 
@@ -602,33 +566,23 @@ int asn1_signature_type(const uint8_t *cert,
     len = get_asn1_length(cert, offset);
 
     if (len == sizeof(sig_sha1WithRSAEncrypt) &&
-            memcmp(sig_sha1WithRSAEncrypt, &cert[*offset],
-                   sizeof(sig_sha1WithRSAEncrypt)) == 0)
-    {
+        memcmp(sig_sha1WithRSAEncrypt, &cert[*offset],
+               sizeof(sig_sha1WithRSAEncrypt)) == 0) {
         x509_ctx->sig_type = SIG_TYPE_SHA1;
-    }
-    else if (len == sizeof(sig_sha256) &&
-             memcmp(sig_sha256, &cert[*offset],
-                    sizeof(sig_sha256)) == 0)
-    {
+    } else if (len == sizeof(sig_sha256) &&
+               memcmp(sig_sha256, &cert[*offset],
+                      sizeof(sig_sha256)) == 0) {
         x509_ctx->sig_type = SIG_TYPE_SHA256;
-    }
-    else if (len == sizeof(sig_sha384) &&
-             memcmp(sig_sha384, &cert[*offset],
-                    sizeof(sig_sha384)) == 0)
-    {
+    } else if (len == sizeof(sig_sha384) &&
+               memcmp(sig_sha384, &cert[*offset],
+                      sizeof(sig_sha384)) == 0) {
         x509_ctx->sig_type = SIG_TYPE_SHA384;
-    }
-    else if (len == sizeof(sig_sha512) &&
-             memcmp(sig_sha512, &cert[*offset],
-                    sizeof(sig_sha512)) == 0)
-    {
+    } else if (len == sizeof(sig_sha512) &&
+               memcmp(sig_sha512, &cert[*offset],
+                      sizeof(sig_sha512)) == 0) {
         x509_ctx->sig_type = SIG_TYPE_SHA512;
-    }
-    else
-    {
-        if (memcmp(sig_oid_prefix, &cert[*offset], sizeof(sig_oid_prefix)))
-        {
+    } else {
+        if (memcmp(sig_oid_prefix, &cert[*offset], sizeof(sig_oid_prefix))) {
 #ifdef CONFIG_SSL_FULL_MODE
             int i;
             printf("invalid digest: ");

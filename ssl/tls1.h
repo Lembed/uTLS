@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007-2014, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -62,7 +62,7 @@ extern "C" {
 
 /* the flags we use while establishing a connection */
 #define SSL_NEED_RECORD             0x0001
-#define SSL_TX_ENCRYPTED            0x0002 
+#define SSL_TX_ENCRYPTED            0x0002
 #define SSL_RX_ENCRYPTED            0x0004
 #define SSL_SESSION_RESUME          0x0008
 #define SSL_IS_CLIENT               0x0010
@@ -89,8 +89,7 @@ extern "C" {
     ret = SSL_ERROR_INVALID_HANDSHAKE; goto error; }
 
 /* protocol types */
-enum
-{
+enum {
     PT_CHANGE_CIPHER_SPEC = 20,
     PT_ALERT_PROTOCOL,
     PT_HANDSHAKE_PROTOCOL,
@@ -98,8 +97,7 @@ enum
 };
 
 /* handshaking types */
-enum
-{
+enum {
     HS_HELLO_REQUEST,
     HS_CLIENT_HELLO,
     HS_SERVER_HELLO,
@@ -112,8 +110,7 @@ enum
     HS_FINISHED = 20
 };
 
-typedef struct 
-{
+typedef struct {
     uint8_t cipher;
     uint8_t key_size;
     uint8_t iv_size;
@@ -125,29 +122,25 @@ typedef struct
     crypt_func decrypt;
 } cipher_info_t;
 
-struct _SSLObjLoader 
-{
+struct _SSLObjLoader {
     uint8_t *buf;
     int len;
 };
 
 typedef struct _SSLObjLoader SSLObjLoader;
 
-typedef struct 
-{
+typedef struct {
     time_t conn_time;
     uint8_t session_id[SSL_SESSION_ID_SIZE];
     uint8_t master_secret[SSL_SECRET_SIZE];
 } SSL_SESSION;
 
-typedef struct
-{
+typedef struct {
     uint8_t *buf;
     int size;
 } SSL_CERT;
 
-typedef struct
-{
+typedef struct {
     MD5_CTX md5_ctx;
     SHA1_CTX sha1_ctx;
     uint8_t final_finish_mac[SSL_FINISHED_HASH_SIZE];
@@ -158,8 +151,7 @@ typedef struct
     uint16_t bm_proc_index;
 } DISPOSABLE_CTX;
 
-struct _SSL
-{
+struct _SSL {
     uint32_t flag;
     uint16_t need_bytes;
     uint16_t got_bytes;
@@ -175,7 +167,7 @@ struct _SSL
     const cipher_info_t *cipher_info;
     void *encrypt_ctx;
     void *decrypt_ctx;
-    uint8_t bm_all_data[RT_MAX_PLAIN_LENGTH+RT_EXTRA];
+    uint8_t bm_all_data[RT_MAX_PLAIN_LENGTH + RT_EXTRA];
     uint8_t *bm_data;
     uint16_t bm_index;
     uint16_t bm_read_index;
@@ -190,7 +182,7 @@ struct _SSL
     X509_CTX *x509_ctx;
 #endif
 
-    uint8_t session_id[SSL_SESSION_ID_SIZE]; 
+    uint8_t session_id[SSL_SESSION_ID_SIZE];
     uint8_t client_mac[SHA1_SIZE];  /* for HMAC verification */
     uint8_t server_mac[SHA1_SIZE];  /* for HMAC verification */
     uint8_t read_sequence[8];       /* 64 bit sequence number */
@@ -200,8 +192,7 @@ struct _SSL
 
 typedef struct _SSL SSL;
 
-struct _SSL_CTX
-{
+struct _SSL_CTX {
     uint32_t options;
     uint8_t chain_length;
     RSA_CTX *rsa_ctx;
@@ -233,8 +224,8 @@ extern const uint8_t ssl_prot_prefs[NUM_PROTOCOLS];
 SSL *ssl_new(SSL_CTX *ssl_ctx, int client_fd);
 void disposable_new(SSL *ssl);
 void disposable_free(SSL *ssl);
-int send_packet(SSL *ssl, uint8_t protocol, 
-        const uint8_t *in, int length);
+int send_packet(SSL *ssl, uint8_t protocol,
+                const uint8_t *in, int length);
 int do_svr_handshake(SSL *ssl, int handshake_type, uint8_t *buf, int hs_len);
 int do_clnt_handshake(SSL *ssl, int handshake_type, uint8_t *buf, int hs_len);
 int process_finished(SSL *ssl, uint8_t *buf, int hs_len);
@@ -263,8 +254,8 @@ int do_client_connect(SSL *ssl);
 
 #ifdef CONFIG_SSL_FULL_MODE
 void DISPLAY_STATE(SSL *ssl, int is_send, uint8_t state, int not_ok);
-void DISPLAY_BYTES(SSL *ssl, const char *format, 
-        const uint8_t *data, int size, ...);
+void DISPLAY_BYTES(SSL *ssl, const char *format,
+                   const uint8_t *data, int size, ...);
 void DISPLAY_CERT(SSL *ssl, const X509_CTX *x509_ctx);
 void DISPLAY_RSA(SSL *ssl,  const RSA_CTX *rsa_ctx);
 void DISPLAY_ALERT(SSL *ssl, int alert);
@@ -275,7 +266,7 @@ void DISPLAY_ALERT(SSL *ssl, int alert);
 #define DISPLAY_ALERT(A, B)
 #ifdef WIN32
 void DISPLAY_BYTES(SSL *ssl, const char *format,/* win32 has no variadic macros */
-        const uint8_t *data, int size, ...);
+                   const uint8_t *data, int size, ...);
 #else
 #define DISPLAY_BYTES(A,B,C,D,...)
 #endif
@@ -285,13 +276,13 @@ void DISPLAY_BYTES(SSL *ssl, const char *format,/* win32 has no variadic macros 
 int process_certificate(SSL *ssl, X509_CTX **x509_ctx);
 #endif
 
-SSL_SESSION *ssl_session_update(int max_sessions, 
-        SSL_SESSION *ssl_sessions[], SSL *ssl,
-        const uint8_t *session_id);
+SSL_SESSION *ssl_session_update(int max_sessions,
+                                SSL_SESSION *ssl_sessions[], SSL *ssl,
+                                const uint8_t *session_id);
 void kill_ssl_session(SSL_SESSION **ssl_sessions, SSL *ssl);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif 
+#endif

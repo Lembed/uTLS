@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2015, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -48,16 +48,15 @@
     (b)[(i) + 3] = (uint8_t) ((n)      );       \
 }
 
-static const uint8_t sha256_padding[64] =
-{
- 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+static const uint8_t sha256_padding[64] = {
+    0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 /**
- * Initialize the SHA256 context 
+ * Initialize the SHA256 context
  */
 void SHA256_Init(SHA256_CTX *ctx)
 {
@@ -219,8 +218,7 @@ void SHA256_Update(SHA256_CTX *ctx, const uint8_t * msg, int len)
     if (ctx->total[0] < len)
         ctx->total[1]++;
 
-    if (left && len >= fill)
-    {
+    if (left && len >= fill) {
         memcpy((void *) (ctx->buffer + left), (void *)msg, fill);
         SHA256_Process(ctx->buffer, ctx);
         len -= fill;
@@ -228,15 +226,13 @@ void SHA256_Update(SHA256_CTX *ctx, const uint8_t * msg, int len)
         left = 0;
     }
 
-    while (len >= 64)
-    {
+    while (len >= 64) {
         SHA256_Process(msg, ctx);
         len -= 64;
         msg  += 64;
     }
 
-    if (len)
-    {
+    if (len) {
         memcpy((void *) (ctx->buffer + left), (void *) msg, len);
     }
 }
@@ -251,7 +247,7 @@ void SHA256_Final(uint8_t *digest, SHA256_CTX *ctx)
     uint8_t msglen[8];
 
     high = (ctx->total[0] >> 29)
-         | (ctx->total[1] <<  3);
+           | (ctx->total[1] <<  3);
     low  = (ctx->total[0] <<  3);
 
     PUT_UINT32(high, msglen, 0);

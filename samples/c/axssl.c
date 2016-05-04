@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     }
 
     if (argc < 2 || (
-                strcmp(argv[1], "s_server") && strcmp(argv[1], "s_client")))
+            strcmp(argv[1], "s_server") && strcmp(argv[1], "s_client")))
         print_options(argc > 1 ? argv[1] : "");
 
     strcmp(argv[1], "s_server") ?
@@ -128,8 +128,7 @@ static void do_server(int argc, char *argv[])
     cert = (char **)calloc(1, sizeof(char *)*cert_size);
 #endif
 
-    while (i < argc)
-    {
+    while (i < argc) {
         if (strcmp(argv[i], "-accept") == 0)  {
             if (i >= argc - 1)  {
                 print_server_options(argv[i]);
@@ -144,8 +143,7 @@ static void do_server(int argc, char *argv[])
             }
 
             cert[cert_index++] = argv[++i];
-        }
-        else if (strcmp(argv[i], "-key") == 0) {
+        } else if (strcmp(argv[i], "-key") == 0) {
             if (i >= argc - 1) {
                 print_server_options(argv[i]);
             }
@@ -167,8 +165,7 @@ static void do_server(int argc, char *argv[])
 #ifdef CONFIG_SSL_CERT_VERIFICATION
         else if (strcmp(argv[i], "-verify") == 0) {
             options |= SSL_CLIENT_AUTHENTICATION;
-        }
-        else if (strcmp(argv[i], "-CAfile") == 0)  {
+        } else if (strcmp(argv[i], "-CAfile") == 0)  {
             if (i >= argc - 1 || ca_cert_index >= ca_cert_size) {
                 print_server_options(argv[i]);
             }
@@ -179,11 +176,9 @@ static void do_server(int argc, char *argv[])
 #ifdef CONFIG_SSL_FULL_MODE
         else if (strcmp(argv[i], "-debug") == 0)  {
             options |= SSL_DISPLAY_BYTES;
-        }
-        else if (strcmp(argv[i], "-state") == 0) {
+        } else if (strcmp(argv[i], "-state") == 0) {
             options |= SSL_DISPLAY_STATES;
-        }
-        else if (strcmp(argv[i], "-show-rsa") == 0) {
+        } else if (strcmp(argv[i], "-show-rsa") == 0) {
             options |= SSL_DISPLAY_RSA;
         }
 #endif
@@ -315,25 +310,19 @@ static void do_server(int argc, char *argv[])
                             res = ssl_write(ssl, buf, strlen((char *)buf) + 1);
                         }
                     }
-                }
-                else    /* a socket read */
+                } else  /* a socket read */
 #endif
                 {
                     /* keep reading until we get something interesting */
                     uint8_t *read_buf;
 
-                    if ((res = ssl_read(ssl, &read_buf)) == SSL_OK)
-                    {
+                    if ((res = ssl_read(ssl, &read_buf)) == SSL_OK) {
                         /* are we in the middle of doing a handshake? */
-                        if (ssl_handshake_status(ssl) != SSL_OK)
-                        {
+                        if (ssl_handshake_status(ssl) != SSL_OK) {
                             reconnected = 0;
-                        }
-                        else if (!reconnected)
-                        {
+                        } else if (!reconnected) {
                             /* we are connected/reconnected */
-                            if (!quiet)
-                            {
+                            if (!quiet) {
                                 display_session_id(ssl);
                                 display_cipher(ssl);
                             }
@@ -342,23 +331,17 @@ static void do_server(int argc, char *argv[])
                         }
                     }
 
-                    if (res > SSL_OK)    /* display our interesting output */
-                    {
+                    if (res > SSL_OK) {  /* display our interesting output */
                         int written = 0;
-                        while (written < res)
-                        {
+                        while (written < res) {
                             written += write(STDOUT_FILENO, read_buf + written,
                                              res - written);
                         }
                         TTY_FLUSH();
-                    }
-                    else if (res == SSL_CLOSE_NOTIFY)
-                    {
+                    } else if (res == SSL_CLOSE_NOTIFY) {
                         printf("shutting down SSL\n");
                         TTY_FLUSH();
-                    }
-                    else if (res < SSL_OK && !quiet)
-                    {
+                    } else if (res < SSL_OK && !quiet) {
                         ssl_display_error(res);
                     }
                 }
@@ -416,19 +399,16 @@ static void do_client(int argc, char *argv[])
     ca_cert = (char **)calloc(1, sizeof(char *)*ca_cert_size);
     cert = (char **)calloc(1, sizeof(char *)*cert_size);
 
-    while (i < argc)
-    {
+    while (i < argc) {
         if (strcmp(argv[i], "-connect") == 0)        {
             char *host, *ptr;
 
-            if (i >= argc - 1)
-            {
+            if (i >= argc - 1) {
                 print_client_options(argv[i]);
             }
 
             host = argv[++i];
-            if ((ptr = strchr(host, ':')) == NULL)
-            {
+            if ((ptr = strchr(host, ':')) == NULL) {
                 print_client_options(argv[i]);
             }
 
@@ -436,15 +416,13 @@ static void do_client(int argc, char *argv[])
             port = atoi(ptr);
             hostent = gethostbyname(host);
 
-            if (hostent == NULL)
-            {
+            if (hostent == NULL) {
                 print_client_options(argv[i]);
             }
 
             sin_addr = *((uint32_t **)hostent->h_addr_list)[0];
         } else if (strcmp(argv[i], "-cert") == 0) {
-            if (i >= argc - 1 || cert_index >= cert_size)
-            {
+            if (i >= argc - 1 || cert_index >= cert_size) {
                 print_client_options(argv[i]);
             }
 
@@ -470,8 +448,7 @@ static void do_client(int argc, char *argv[])
             quiet = 1;
             options &= ~SSL_DISPLAY_CERTS;
         } else if (strcmp(argv[i], "-pass") == 0) {
-            if (i >= argc - 1)
-            {
+            if (i >= argc - 1) {
                 print_client_options(argv[i]);
             }
 
@@ -544,29 +521,23 @@ static void do_client(int argc, char *argv[])
     client_addr.sin_addr.s_addr = sin_addr;
 
     if (connect(client_fd, (struct sockaddr *)&client_addr,
-                sizeof(client_addr)) < 0)
-    {
+                sizeof(client_addr)) < 0) {
         perror("connect");
         exit(1);
     }
 
-    if (!quiet)
-    {
+    if (!quiet) {
         printf("CONNECTED\n");
         TTY_FLUSH();
     }
 
     /* Try session resumption? */
-    if (reconnect)
-    {
-        while (reconnect--)
-        {
+    if (reconnect) {
+        while (reconnect--) {
             ssl = ssl_client_new(ssl_ctx, client_fd, session_id,
                                  sizeof(session_id));
-            if ((res = ssl_handshake_status(ssl)) != SSL_OK)
-            {
-                if (!quiet)
-                {
+            if ((res = ssl_handshake_status(ssl)) != SSL_OK) {
+                if (!quiet) {
                     ssl_display_error(res);
                 }
 
@@ -577,8 +548,7 @@ static void do_client(int argc, char *argv[])
             display_session_id(ssl);
             memcpy(session_id, ssl_get_session_id(ssl), SSL_SESSION_ID_SIZE);
 
-            if (reconnect)
-            {
+            if (reconnect) {
                 ssl_free(ssl);
                 SOCKET_CLOSE(client_fd);
 
@@ -587,29 +557,23 @@ static void do_client(int argc, char *argv[])
                         sizeof(client_addr));
             }
         }
-    }
-    else
-    {
+    } else {
         ssl = ssl_client_new(ssl_ctx, client_fd, NULL, 0);
     }
 
     /* check the return status */
-    if ((res = ssl_handshake_status(ssl)) != SSL_OK)
-    {
-        if (!quiet)
-        {
+    if ((res = ssl_handshake_status(ssl)) != SSL_OK) {
+        if (!quiet) {
             ssl_display_error(res);
         }
 
         exit(1);
     }
 
-    if (!quiet)
-    {
+    if (!quiet) {
         const char *common_name = ssl_get_cert_dn(ssl,
                                   SSL_X509_CERT_COMMON_NAME);
-        if (common_name)
-        {
+        if (common_name) {
             printf("Common Name:\t\t\t%s\n", common_name);
         }
 
@@ -617,8 +581,7 @@ static void do_client(int argc, char *argv[])
         display_cipher(ssl);
     }
 
-    for (;;)
-    {
+    for (;;) {
         uint8_t buf[1024];
 
         /* allow parallel reading of server and standard input */
@@ -627,43 +590,33 @@ static void do_client(int argc, char *argv[])
         /* win32 doesn't like mixing up stdin and sockets */
         FD_SET(STDIN_FILENO, &read_set);
 
-        if ((res = select(client_fd + 1, &read_set, NULL, NULL, NULL)) > 0)
-        {
+        if ((res = select(client_fd + 1, &read_set, NULL, NULL, NULL)) > 0) {
             /* read standard input? */
             if (FD_ISSET(STDIN_FILENO, &read_set))
 #endif
             {
-                if (fgets((char *)buf, sizeof(buf), stdin) == NULL)
-                {
+                if (fgets((char *)buf, sizeof(buf), stdin) == NULL) {
                     /* bomb out of here */
                     ssl_free(ssl);
                     break;
-                }
-                else
-                {
+                } else {
                     /* small hack to check renegotiation */
-                    if (buf[0] == 'R' && (buf[1] == '\n' || buf[1] == '\r'))
-                    {
+                    if (buf[0] == 'R' && (buf[1] == '\n' || buf[1] == '\r')) {
                         res = ssl_renegotiate(ssl);
-                    }
-                    else
-                    {
+                    } else {
                         res = ssl_write(ssl, buf, strlen((char *)buf));
                     }
                 }
             }
 #ifndef WIN32
-            else    /* a socket read */
-            {
+            else {  /* a socket read */
                 uint8_t *read_buf;
 
                 res = ssl_read(ssl, &read_buf);
 
-                if (res > 0)    /* display our interesting output */
-                {
+                if (res > 0) {  /* display our interesting output */
                     int written = 0;
-                    while (written < res)
-                    {
+                    while (written < res) {
                         written += write(STDOUT_FILENO, read_buf + written,
                                          res - written);
                     }
@@ -673,10 +626,8 @@ static void do_client(int argc, char *argv[])
         }
 #endif
 
-        if (res < 0)
-        {
-            if (!quiet)
-            {
+        if (res < 0) {
+            if (!quiet) {
                 ssl_display_error(res);
             }
 
@@ -779,8 +730,7 @@ static void print_client_options(char *option)
 static void display_cipher(SSL *ssl)
 {
     printf("CIPHER is ");
-    switch (ssl_get_cipher_id(ssl))
-    {
+    switch (ssl_get_cipher_id(ssl)) {
     case SSL_AES128_SHA:
         printf("AES128-SHA");
         break;
@@ -815,8 +765,7 @@ static void display_session_id(SSL *ssl)
     int sess_id_size = ssl_get_session_id_size(ssl);
     int i = 0;
 
-    if (sess_id_size > 0)
-    {
+    if (sess_id_size > 0) {
         printf("-----BEGIN SSL SESSION PARAMETERS-----\n");
 
         for (i = 0; i < sess_id_size; i++) {

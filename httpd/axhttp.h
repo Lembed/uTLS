@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -52,15 +52,13 @@
 #define STATE_WANT_TO_SEND_FILE             4
 #define STATE_DOING_DIR                     5
 
-enum
-{
+enum {
     TYPE_GET,
     TYPE_HEAD,
     TYPE_POST
 };
 
-struct connstruct 
-{
+struct connstruct {
     struct connstruct *next;
     int state;
     int reqtype;
@@ -102,13 +100,12 @@ struct connstruct
 #if defined(CONFIG_HTTP_HAS_AUTHORIZATION)
     char authorization[MAXREQUESTLENGTH];
 #endif
-  int post_read;
-  int post_state;
-  char *post_data;
+    int post_read;
+    int post_state;
+    char *post_data;
 };
 
-struct serverstruct 
-{
+struct serverstruct {
     struct serverstruct *next;
     int sd;
     int is_ssl;
@@ -116,8 +113,7 @@ struct serverstruct
 };
 
 #if defined(CONFIG_HTTP_HAS_CGI)
-struct cgiextstruct 
-{
+struct cgiextstruct {
     struct cgiextstruct *next;
     char *ext;
 };

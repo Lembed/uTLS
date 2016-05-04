@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2007, Cameron Rich
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without 
+ *
+ * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * * Redistributions of source code must retain the above copyright notice, 
+ * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
- * * Neither the name of the axTLS project nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software 
+ * * Neither the name of the axTLS project nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
  *   without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -47,8 +47,8 @@ bigint *int_to_bi(BI_CTX *ctx, comp i);
 
 /* the functions that actually do something interesting */
 bigint *bi_add(BI_CTX *ctx, bigint *bia, bigint *bib);
-bigint *bi_subtract(BI_CTX *ctx, bigint *bia, 
-        bigint *bib, int *is_negative);
+bigint *bi_subtract(BI_CTX *ctx, bigint *bia,
+                    bigint *bib, int *is_negative);
 bigint *bi_divide(BI_CTX *ctx, bigint *bia, bigint *bim, int is_mod);
 bigint *bi_multiply(BI_CTX *ctx, bigint *bia, bigint *bib);
 bigint *bi_mod_power(BI_CTX *ctx, bigint *bi, bigint *biexp);
@@ -91,9 +91,9 @@ bigint *bi_square(BI_CTX *ctx, bigint *bi);
 
 #ifdef CONFIG_BIGINT_CRT
 bigint *bi_crt(BI_CTX *ctx, bigint *bi,
-        bigint *dP, bigint *dQ,
-        bigint *p, bigint *q,
-        bigint *qInv);
+               bigint *dP, bigint *dQ,
+               bigint *p, bigint *q,
+               bigint *qInv);
 #endif
 
 #endif
