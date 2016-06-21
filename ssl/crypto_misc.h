@@ -160,13 +160,13 @@ typedef void (*hmac_func)(const uint8_t *msg, int length, const uint8_t *key,
 int get_file(const char *filename, uint8_t **buf);
 
 #if defined(CONFIG_SSL_FULL_MODE) || defined(WIN32) || defined(CONFIG_DEBUG)
-EXP_FUNC void STDCALL print_blob(const char *format, const uint8_t *data, int size, ...);
+void  print_blob(const char *format, const uint8_t *data, int size, ...);
 #else
 #define print_blob(...)
 #endif
 
-EXP_FUNC int STDCALL base64_decode(const char *in,  int len,
-                                   uint8_t *out, int *outlen);
+int  base64_decode(const char *in,  int len,
+                   uint8_t *out, int *outlen);
 
 #ifdef __cplusplus
 }

@@ -204,7 +204,7 @@ extern "C" {
  * is not used in skeleton mode.
  * @return A client/server context.
  */
-EXP_FUNC SSL_CTX * STDCALL ssl_ctx_new(uint32_t options, int num_sessions);
+SSL_CTX *  ssl_ctx_new(uint32_t options, int num_sessions);
 
 /**
  * @brief Remove a client/server context.
@@ -213,7 +213,7 @@ EXP_FUNC SSL_CTX * STDCALL ssl_ctx_new(uint32_t options, int num_sessions);
  * sent a "Close Notify" alert (if possible).
  * @param ssl_ctx [in] The client/server context.
  */
-EXP_FUNC void STDCALL ssl_ctx_free(SSL_CTX *ssl_ctx);
+void  ssl_ctx_free(SSL_CTX *ssl_ctx);
 
 /**
  * @brief (server only) Establish a new SSL connection to an SSL client.
@@ -224,7 +224,7 @@ EXP_FUNC void STDCALL ssl_ctx_free(SSL_CTX *ssl_ctx);
  * @param client_fd [in] The client's file descriptor.
  * @return An SSL object reference.
  */
-EXP_FUNC SSL * STDCALL ssl_server_new(SSL_CTX *ssl_ctx, int client_fd);
+SSL *  ssl_server_new(SSL_CTX *ssl_ctx, int client_fd);
 
 /**
  * @brief (client only) Establish a new SSL connection to an SSL server.
@@ -244,7 +244,7 @@ EXP_FUNC SSL * STDCALL ssl_server_new(SSL_CTX *ssl_ctx, int client_fd);
  * @return An SSL object reference. Use ssl_handshake_status() to check
  * if a handshake succeeded.
  */
-EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const uint8_t *session_id, uint8_t sess_id_size);
+SSL *  ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const uint8_t *session_id, uint8_t sess_id_size);
 
 /**
  * @brief Free any used resources on this connection.
@@ -253,7 +253,7 @@ EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const uin
  * to the application to close the socket or file descriptor.
  * @param ssl [in] The ssl object reference.
  */
-EXP_FUNC void STDCALL ssl_free(SSL *ssl);
+void  ssl_free(SSL *ssl);
 
 /**
  * @brief Read the SSL data stream.
@@ -271,7 +271,7 @@ EXP_FUNC void STDCALL ssl_free(SSL *ssl);
  * @see ssl.h for the error code list.
  * @note Use in_data before doing any successive ssl calls.
  */
-EXP_FUNC int STDCALL ssl_read(SSL *ssl, uint8_t **in_data);
+int  ssl_read(SSL *ssl, uint8_t **in_data);
 
 /**
  * @brief Write to the SSL data stream.
@@ -283,7 +283,7 @@ EXP_FUNC int STDCALL ssl_read(SSL *ssl, uint8_t **in_data);
  * @return The number of bytes sent, or if < 0 if an error.
  * @see ssl.h for the error code list.
  */
-EXP_FUNC int STDCALL ssl_write(SSL *ssl, const uint8_t *out_data, int out_len);
+int  ssl_write(SSL *ssl, const uint8_t *out_data, int out_len);
 
 /**
  * @brief Find an ssl object based on a file descriptor.
@@ -295,7 +295,7 @@ EXP_FUNC int STDCALL ssl_write(SSL *ssl, const uint8_t *out_data, int out_len);
  * @return A reference to the SSL object. Returns null if the object could not
  * be found.
  */
-EXP_FUNC SSL * STDCALL ssl_find(SSL_CTX *ssl_ctx, int client_fd);
+SSL *  ssl_find(SSL_CTX *ssl_ctx, int client_fd);
 
 /**
  * @brief Get the session id for a handshake.
@@ -306,7 +306,7 @@ EXP_FUNC SSL * STDCALL ssl_find(SSL_CTX *ssl_ctx, int client_fd);
  * @return The session id as a 32 byte sequence.
  * @note A SSLv23 handshake may have only 16 valid bytes.
  */
-EXP_FUNC const uint8_t * STDCALL ssl_get_session_id(const SSL *ssl);
+const uint8_t *  ssl_get_session_id(const SSL *ssl);
 
 /**
  * @brief Get the session id size for a handshake.
@@ -315,7 +315,7 @@ EXP_FUNC const uint8_t * STDCALL ssl_get_session_id(const SSL *ssl);
  * @param ssl [in] An SSL object reference.
  * @return The size of the session id.
  */
-EXP_FUNC uint8_t STDCALL ssl_get_session_id_size(const SSL *ssl);
+uint8_t  ssl_get_session_id_size(const SSL *ssl);
 
 /**
  * @brief Return the cipher id (in the SSL form).
@@ -326,7 +326,7 @@ EXP_FUNC uint8_t STDCALL ssl_get_session_id_size(const SSL *ssl);
  * - SSL_RC4_128_SHA (0x05)
  * - SSL_RC4_128_MD5 (0x04)
  */
-EXP_FUNC uint8_t STDCALL ssl_get_cipher_id(const SSL *ssl);
+uint8_t  ssl_get_cipher_id(const SSL *ssl);
 
 /**
  * @brief Return the status of the handshake.
@@ -334,7 +334,7 @@ EXP_FUNC uint8_t STDCALL ssl_get_cipher_id(const SSL *ssl);
  * @return SSL_OK if the handshake is complete and ok.
  * @see ssl.h for the error code list.
  */
-EXP_FUNC int STDCALL ssl_handshake_status(const SSL *ssl);
+int  ssl_handshake_status(const SSL *ssl);
 
 /**
  * @brief Retrieve various parameters about the axTLS engine.
@@ -350,7 +350,7 @@ EXP_FUNC int STDCALL ssl_handshake_status(const SSL *ssl);
  * - SSL_HAS_PEM                        1 if supported
  * @return The value of the requested parameter.
  */
-EXP_FUNC int STDCALL ssl_get_config(int offset);
+int  ssl_get_config(int offset);
 
 /**
  * @brief Display why the handshake failed.
@@ -359,7 +359,7 @@ EXP_FUNC int STDCALL ssl_get_config(int offset);
  * @param error_code [in] An error code.
  * @see ssl.h for the error code list.
  */
-EXP_FUNC void STDCALL ssl_display_error(int error_code);
+void  ssl_display_error(int error_code);
 
 /**
  * @brief Authenticate a received certificate.
@@ -369,7 +369,7 @@ EXP_FUNC void STDCALL ssl_display_error(int error_code);
  * @param ssl [in] An SSL object reference.
  * @return SSL_OK if the certificate is verified.
  */
-EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl);
+int  ssl_verify_cert(const SSL *ssl);
 
 /**
  * @brief Retrieve an X.509 distinguished name component.
@@ -391,7 +391,7 @@ EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl);
  * @return The appropriate string (or null if not defined)
  * @note Verification build mode must be enabled.
  */
-EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component);
+const char *  ssl_get_cert_dn(const SSL *ssl, int component);
 
 /**
  * @brief Retrieve a Subject Alternative DNSName
@@ -407,7 +407,7 @@ EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component);
  * @return The appropriate string (or null if not defined)
  * @note Verification build mode must be enabled.
  */
-EXP_FUNC const char * STDCALL ssl_get_cert_subject_alt_dnsname(const SSL *ssl, int dnsindex);
+const char *  ssl_get_cert_subject_alt_dnsname(const SSL *ssl, int dnsindex);
 
 /**
  * @brief Force the client to perform its handshake again.
@@ -420,7 +420,7 @@ EXP_FUNC const char * STDCALL ssl_get_cert_subject_alt_dnsname(const SSL *ssl, i
  * @param ssl [in] An SSL object reference.
  * @return SSL_OK if renegotiation instantiation was ok
  */
-EXP_FUNC int STDCALL ssl_renegotiate(SSL *ssl);
+int  ssl_renegotiate(SSL *ssl);
 
 /**
  * @brief Process a file that is in binary DER or ASCII PEM format.
@@ -442,7 +442,7 @@ EXP_FUNC int STDCALL ssl_renegotiate(SSL *ssl);
  * @return SSL_OK if all ok
  * @note Not available in skeleton build mode.
  */
-EXP_FUNC int STDCALL ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type, const char *filename, const char *password);
+int  ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type, const char *filename, const char *password);
 
 /**
  * @brief Process binary data.
@@ -457,7 +457,7 @@ EXP_FUNC int STDCALL ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type, const char *fi
  * @return SSL_OK if all ok
  * @see ssl_obj_load for more details on obj_type.
  */
-EXP_FUNC int STDCALL ssl_obj_memory_load(SSL_CTX *ssl_ctx, int obj_type, const uint8_t *data, int len, const char *password);
+int  ssl_obj_memory_load(SSL_CTX *ssl_ctx, int obj_type, const uint8_t *data, int len, const char *password);
 
 #ifdef CONFIG_SSL_GENERATE_X509_CERT
 /**
@@ -482,13 +482,13 @@ EXP_FUNC int STDCALL ssl_obj_memory_load(SSL_CTX *ssl_ctx, int obj_type, const u
  * @return < 0 if an error, or the size of the certificate in bytes.
  * @note cert_data must be freed when there is no more need for it.
  */
-EXP_FUNC int STDCALL ssl_x509_create(SSL_CTX *ssl_ctx, uint32_t options, const char * dn[], uint8_t **cert_data);
+int  ssl_x509_create(SSL_CTX *ssl_ctx, uint32_t options, const char * dn[], uint8_t **cert_data);
 #endif
 
 /**
  * @brief Return the axTLS library version as a string.
  */
-EXP_FUNC const char * STDCALL ssl_version(void);
+const char *  ssl_version(void);
 
 /** @} */
 

@@ -49,7 +49,7 @@ static int process_cert_verify(SSL *ssl);
 /*
  * Establish a new SSL connection to an SSL client.
  */
-EXP_FUNC SSL * STDCALL ssl_server_new(SSL_CTX *ssl_ctx, int client_fd)
+SSL * STDCALL ssl_server_new(SSL_CTX *ssl_ctx, int client_fd)
 {
     SSL *ssl;
 

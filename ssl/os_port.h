@@ -45,8 +45,6 @@ extern "C" {
 #include "config.h"
 #include <stdio.h>
 
-#define STDCALL
-#define EXP_FUNC
 
 #include <unistd.h>
 #include <pwd.h>
@@ -79,10 +77,10 @@ extern "C" {
 #endif
 #define calloc(A,B)     ax_calloc(A,B)
 
-EXP_FUNC void * STDCALL ax_malloc(size_t s);
-EXP_FUNC void * STDCALL ax_realloc(void *y, size_t s);
-EXP_FUNC void * STDCALL ax_calloc(size_t n, size_t s);
-EXP_FUNC int STDCALL ax_open(const char *pathname, int flags);
+void *  ax_malloc(size_t s);
+void *  ax_realloc(void *y, size_t s);
+void *  ax_calloc(size_t n, size_t s);
+int  ax_open(const char *pathname, int flags);
 
 #ifdef CONFIG_PLATFORM_LINUX
 void exit_now(const char *format, ...) __attribute((noreturn));

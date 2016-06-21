@@ -1129,9 +1129,7 @@ PREDEFINED             = CONFIG_SSL_CERT_VERIFICATION \
                          CONFIG_SSL_GENERATE_X509_CERT \
                          CONFIG_BIGINT_MONTGOMERY \
                          CONFIG_BIGINT_BARRETT \
-                         CONFIG_BIGINT_CRT \
-                         "EXP_FUNC=" \
-                         "STDCALL="
+                         CONFIG_BIGINT_CRT 
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

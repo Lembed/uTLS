@@ -151,16 +151,11 @@ static void increment_write_sequence(SSL *ssl);
 static void add_hmac_digest(SSL *ssl, int snd, uint8_t *hmac_header,
                             const uint8_t *buf, int buf_len, uint8_t *hmac_buf);
 
-/* win32 VC6.0 doesn't have variadic macros */
-#if defined(WIN32) && !defined(CONFIG_SSL_FULL_MODE)
-void DISPLAY_BYTES(SSL *ssl, const char *format,
-                   const uint8_t *data, int size, ...) {}
-#endif
 
 /**
  * Establish a new client/server context.
  */
-EXP_FUNC SSL_CTX *STDCALL ssl_ctx_new(uint32_t options, int num_sessions)
+SSL_CTX * ssl_ctx_new(uint32_t options, int num_sessions)
 {
     SSL_CTX *ssl_ctx = (SSL_CTX *)calloc(1, sizeof (SSL_CTX));
     ssl_ctx->options = options;
@@ -179,8 +174,7 @@ EXP_FUNC SSL_CTX *STDCALL ssl_ctx_new(uint32_t options, int num_sessions)
 
 #ifndef CONFIG_SSL_SKELETON_MODE
     if (num_sessions) {
-        ssl_ctx->ssl_sessions = (SSL_SESSION **)
-                                calloc(1, num_sessions * sizeof(SSL_SESSION *));
+        ssl_ctx->ssl_sessions = (SSL_SESSION **)calloc(1, num_sessions * sizeof(SSL_SESSION *));
     }
 #endif
 
@@ -190,13 +184,14 @@ EXP_FUNC SSL_CTX *STDCALL ssl_ctx_new(uint32_t options, int num_sessions)
 /*
  * Remove a client/server context.
  */
-EXP_FUNC void STDCALL ssl_ctx_free(SSL_CTX *ssl_ctx)
+void  ssl_ctx_free(SSL_CTX *ssl_ctx)
 {
     SSL *ssl;
     int i;
 
-    if (ssl_ctx == NULL)
+    if (ssl_ctx == NULL) {
         return;
+    }
 
     ssl = ssl_ctx->head;
 
@@ -234,7 +229,7 @@ EXP_FUNC void STDCALL ssl_ctx_free(SSL_CTX *ssl_ctx)
 /*
  * Free any used resources used by this connection.
  */
-EXP_FUNC void STDCALL ssl_free(SSL *ssl)
+void  ssl_free(SSL *ssl)
 {
     SSL_CTX *ssl_ctx;
 
@@ -251,15 +246,17 @@ EXP_FUNC void STDCALL ssl_free(SSL *ssl)
     SSL_CTX_LOCK(ssl_ctx->mutex);
 
     /* adjust the server SSL list */
-    if (ssl->prev)
+    if (ssl->prev) {
         ssl->prev->next = ssl->next;
-    else
+    } else {
         ssl_ctx->head = ssl->next;
+    }
 
-    if (ssl->next)
+    if (ssl->next) {
         ssl->next->prev = ssl->prev;
-    else
+    } else {
         ssl_ctx->tail = ssl->prev;
+    }
 
     SSL_CTX_UNLOCK(ssl_ctx->mutex);
 
@@ -277,7 +274,7 @@ EXP_FUNC void STDCALL ssl_free(SSL *ssl)
 /*
  * Read the SSL connection and send any alerts for various errors.
  */
-EXP_FUNC int STDCALL ssl_read(SSL *ssl, uint8_t **in_data)
+int  ssl_read(SSL *ssl, uint8_t **in_data)
 {
     int ret = basic_read(ssl, in_data);
 
@@ -298,7 +295,7 @@ EXP_FUNC int STDCALL ssl_read(SSL *ssl, uint8_t **in_data)
 /*
  * Write application data to the client
  */
-EXP_FUNC int STDCALL ssl_write(SSL *ssl, const uint8_t *out_data, int out_len)
+int  ssl_write(SSL *ssl, const uint8_t *out_data, int out_len)
 {
     int n = out_len, nw, i, tot = 0;
 
@@ -332,8 +329,9 @@ int add_cert(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
     X509_CTX *cert = NULL;
     int offset;
 
-    while (i < CONFIG_SSL_MAX_CERTS && ssl_ctx->certs[i].buf)
+    while (i < CONFIG_SSL_MAX_CERTS && ssl_ctx->certs[i].buf) {
         i++;
+    }
 
     if (i == CONFIG_SSL_MAX_CERTS) { /* too many certs */
 #ifdef CONFIG_SSL_FULL_MODE
@@ -344,12 +342,14 @@ int add_cert(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
         goto error;
     }
 
-    if ((ret = x509_new(buf, &offset, &cert)))
+    if ((ret = x509_new(buf, &offset, &cert))) {
         goto error;
+    }
 
 #if defined (CONFIG_SSL_FULL_MODE)
-    if (ssl_ctx->options & SSL_DISPLAY_CERTS)
+    if (ssl_ctx->options & SSL_DISPLAY_CERTS) {
         x509_print(cert, NULL);
+    }
 #endif
 
     ssl_cert = &ssl_ctx->certs[i];
@@ -380,13 +380,15 @@ int add_cert_auth(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
     int i = 0;
     CA_CERT_CTX *ca_cert_ctx;
 
-    if (ssl_ctx->ca_cert_ctx == NULL)
+    if (ssl_ctx->ca_cert_ctx == NULL) {
         ssl_ctx->ca_cert_ctx = (CA_CERT_CTX *)calloc(1, sizeof(CA_CERT_CTX));
+    }
 
     ca_cert_ctx = ssl_ctx->ca_cert_ctx;
 
-    while (i < CONFIG_X509_MAX_CA_CERTS && ca_cert_ctx->cert[i])
+    while (i < CONFIG_X509_MAX_CA_CERTS && ca_cert_ctx->cert[i]) {
         i++;
+    }
 
     while (len > 0) {
         int offset;
@@ -403,8 +405,9 @@ int add_cert_auth(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
         /* ignore the return code */
         if (x509_new(buf, &offset, &ca_cert_ctx->cert[i]) == X509_OK) {
 #if defined (CONFIG_SSL_FULL_MODE)
-            if (ssl_ctx->options & SSL_DISPLAY_CERTS)
+            if (ssl_ctx->options & SSL_DISPLAY_CERTS) {
                 x509_print(ca_cert_ctx->cert[i], NULL);
+            }
 #endif
         }
 
@@ -418,7 +421,7 @@ int add_cert_auth(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
 /*
  * Retrieve an X.509 distinguished name component
  */
-EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component)
+const char *  ssl_get_cert_dn(const SSL *ssl, int component)
 {
     if (ssl->x509_ctx == NULL)
         return NULL;
@@ -450,17 +453,19 @@ EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component)
 /*
  * Retrieve a "Subject Alternative Name" from a v3 certificate
  */
-EXP_FUNC const char * STDCALL ssl_get_cert_subject_alt_dnsname(const SSL *ssl,
+const char *  ssl_get_cert_subject_alt_dnsname(const SSL *ssl,
         int dnsindex)
 {
     int i;
 
-    if (ssl->x509_ctx == NULL || ssl->x509_ctx->subject_alt_dnsnames == NULL)
+    if (ssl->x509_ctx == NULL || ssl->x509_ctx->subject_alt_dnsnames == NULL) {
         return NULL;
+    }
 
     for (i = 0; i < dnsindex; ++i) {
-        if (ssl->x509_ctx->subject_alt_dnsnames[i] == NULL)
+        if (ssl->x509_ctx->subject_alt_dnsnames[i] == NULL) {
             return NULL;
+        }
     }
 
     return ssl->x509_ctx->subject_alt_dnsnames[dnsindex];
@@ -471,7 +476,7 @@ EXP_FUNC const char * STDCALL ssl_get_cert_subject_alt_dnsname(const SSL *ssl,
 /*
  * Find an ssl object based on the client's file descriptor.
  */
-EXP_FUNC SSL * STDCALL ssl_find(SSL_CTX *ssl_ctx, int client_fd)
+SSL *  ssl_find(SSL_CTX *ssl_ctx, int client_fd)
 {
     SSL *ssl;
 
@@ -495,7 +500,7 @@ EXP_FUNC SSL * STDCALL ssl_find(SSL_CTX *ssl_ctx, int client_fd)
 /*
  * Force the client to perform its handshake again.
  */
-EXP_FUNC int STDCALL ssl_renegotiate(SSL *ssl)
+int  ssl_renegotiate(SSL *ssl)
 {
     int ret = SSL_OK;
 
@@ -506,8 +511,7 @@ EXP_FUNC int STDCALL ssl_renegotiate(SSL *ssl)
     } else
 #endif
     {
-        send_packet(ssl, PT_HANDSHAKE_PROTOCOL,
-                    g_hello_request, sizeof(g_hello_request));
+        send_packet(ssl, PT_HANDSHAKE_PROTOCOL, g_hello_request, sizeof(g_hello_request));
         SET_SSL_FLAG(SSL_NEED_RECORD);
     }
 
@@ -707,8 +711,12 @@ void add_packet(SSL *ssl, const uint8_t *pkt, int len)
 /**
  * Work out the MD5 PRF.
  */
-static void p_hash_md5(const uint8_t *sec, int sec_len,
-                       uint8_t *seed, int seed_len, uint8_t *out, int olen)
+static void p_hash_md5(const uint8_t *sec,
+                       int sec_len,
+                       uint8_t *seed,
+                       int seed_len,
+                       uint8_t *out,
+                       int olen)
 {
     uint8_t a1[128];
 
@@ -734,8 +742,12 @@ static void p_hash_md5(const uint8_t *sec, int sec_len,
 /**
  * Work out the SHA1 PRF.
  */
-static void p_hash_sha1(const uint8_t *sec, int sec_len,
-                        uint8_t *seed, int seed_len, uint8_t *out, int olen)
+static void p_hash_sha1(const uint8_t *sec,
+                        int sec_len,
+                        uint8_t *seed,
+                        int seed_len,
+                        uint8_t *out,
+                        int olen)
 {
     uint8_t a1[128];
 
@@ -761,8 +773,12 @@ static void p_hash_sha1(const uint8_t *sec, int sec_len,
 /**
  * Work out the PRF.
  */
-static void prf(const uint8_t *sec, int sec_len, uint8_t *seed, int seed_len,
-                uint8_t *out, int olen)
+static void prf(const uint8_t *sec,
+                int sec_len,
+                uint8_t *seed,
+                int seed_len,
+                uint8_t *out,
+                int olen)
 {
     int len, i;
     const uint8_t *S1, *S2;
@@ -798,8 +814,11 @@ void generate_master_secret(SSL *ssl, const uint8_t *premaster_secret)
 /**
  * Generate a 'random' blob of data used for the generation of keys.
  */
-static void generate_key_block(uint8_t *client_random, uint8_t *server_random,
-                               uint8_t *master_secret, uint8_t *key_block, int key_block_size)
+static void generate_key_block(uint8_t *client_random,
+                               uint8_t *server_random,
+                               uint8_t *master_secret,
+                               uint8_t *key_block,
+                               int key_block_size)
 {
     uint8_t buf[128];
     strcpy((char *)buf, "key expansion");
@@ -1641,7 +1660,7 @@ void kill_ssl_session(SSL_SESSION **ssl_sessions, SSL *ssl)
 /*
  * Get the session id for a handshake. This will be a 32 byte sequence.
  */
-EXP_FUNC const uint8_t * STDCALL ssl_get_session_id(const SSL *ssl)
+const uint8_t *  ssl_get_session_id(const SSL *ssl)
 {
     return ssl->session_id;
 }
@@ -1649,7 +1668,7 @@ EXP_FUNC const uint8_t * STDCALL ssl_get_session_id(const SSL *ssl)
 /*
  * Get the session id size for a handshake.
  */
-EXP_FUNC uint8_t STDCALL ssl_get_session_id_size(const SSL *ssl)
+uint8_t  ssl_get_session_id_size(const SSL *ssl)
 {
     return ssl->sess_id_size;
 }
@@ -1657,7 +1676,7 @@ EXP_FUNC uint8_t STDCALL ssl_get_session_id_size(const SSL *ssl)
 /*
  * Return the cipher id (in the SSL form).
  */
-EXP_FUNC uint8_t STDCALL ssl_get_cipher_id(const SSL *ssl)
+uint8_t  ssl_get_cipher_id(const SSL *ssl)
 {
     return ssl->cipher;
 }
@@ -1665,7 +1684,7 @@ EXP_FUNC uint8_t STDCALL ssl_get_cipher_id(const SSL *ssl)
 /*
  * Return the status of the handshake.
  */
-EXP_FUNC int STDCALL ssl_handshake_status(const SSL *ssl)
+int  ssl_handshake_status(const SSL *ssl)
 {
     return ssl->hs_status;
 }
@@ -1673,7 +1692,7 @@ EXP_FUNC int STDCALL ssl_handshake_status(const SSL *ssl)
 /*
  * Retrieve various parameters about the SSL engine.
  */
-EXP_FUNC int STDCALL ssl_get_config(int offset)
+int  ssl_get_config(int offset)
 {
     switch (offset) {
     /* return the appropriate build mode */
@@ -1710,7 +1729,7 @@ EXP_FUNC int STDCALL ssl_get_config(int offset)
 /**
  * Authenticate a received certificate.
  */
-EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl)
+int  ssl_verify_cert(const SSL *ssl)
 {
     int ret;
     SSL_CTX_LOCK(ssl->ssl_ctx->mutex);
@@ -1869,7 +1888,7 @@ void DISPLAY_BYTES(SSL *ssl, const char *format,
 /**
  * Debugging routine to display SSL handshaking errors.
  */
-EXP_FUNC void STDCALL ssl_display_error(int error_code)
+void  ssl_display_error(int error_code)
 {
     if (error_code == SSL_OK)
         return;
@@ -2019,7 +2038,7 @@ void DISPLAY_ALERT(SSL *ssl, int alert)
 /**
  * Return the version of this library.
  */
-EXP_FUNC const char  * STDCALL ssl_version()
+const char  *  ssl_version()
 {
     static const char * axtls_version = AXTLS_VERSION;
     return axtls_version;
@@ -2030,13 +2049,15 @@ EXP_FUNC const char  * STDCALL ssl_version()
  * configuration - they just return an error statement and a bad return code.
  */
 #if !defined(CONFIG_SSL_FULL_MODE)
-EXP_FUNC void STDCALL ssl_display_error(int error_code) {}
+void  ssl_display_error(int error_code) {}
 #endif
 
 #ifdef CONFIG_BINDINGS
 #if !defined(CONFIG_SSL_ENABLE_CLIENT)
-EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const
-                                      uint8_t *session_id, uint8_t sess_id_size)
+SSL *  ssl_client_new(SSL_CTX *ssl_ctx,
+                      int client_fd,
+                      const uint8_t *session_id,
+                      uint8_t sess_id_size)
 {
     printf("%s", unsupported_str);
     return NULL;
@@ -2044,20 +2065,20 @@ EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const
 #endif
 
 #if !defined(CONFIG_SSL_CERT_VERIFICATION)
-EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl)
+int  ssl_verify_cert(const SSL *ssl)
 {
     printf("%s", unsupported_str);
     return -1;
 }
 
 
-EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component)
+const char *  ssl_get_cert_dn(const SSL *ssl, int component)
 {
     printf("%s", unsupported_str);
     return NULL;
 }
 
-EXP_FUNC const char * STDCALL ssl_get_cert_subject_alt_dnsname(const SSL *ssl, int index)
+const char *  ssl_get_cert_subject_alt_dnsname(const SSL *ssl, int index)
 {
     printf("%s", unsupported_str);
     return NULL;

@@ -54,8 +54,8 @@ static int ssl_obj_PEM_load(SSL_CTX *ssl_ctx, int obj_type,
 /*
  * Load a file into memory that is in binary DER (or ascii PEM) format.
  */
-EXP_FUNC int STDCALL ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type,
-                                  const char *filename, const char *password)
+int  ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type,
+                  const char *filename, const char *password)
 {
 #ifndef CONFIG_SSL_SKELETON_MODE
     static const char * const begin = "-----BEGIN";
@@ -97,8 +97,8 @@ error:
 /*
  * Transfer binary data into the object loader.
  */
-EXP_FUNC int STDCALL ssl_obj_memory_load(SSL_CTX *ssl_ctx, int mem_type,
-        const uint8_t *data, int len, const char *password)
+int  ssl_obj_memory_load(SSL_CTX *ssl_ctx, int mem_type,
+                         const uint8_t *data, int len, const char *password)
 {
     int ret;
     SSLObjLoader *ssl_obj;

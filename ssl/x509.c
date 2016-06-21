@@ -82,19 +82,22 @@ int x509_new(const uint8_t *cert, int *len, X509_CTX **ctx)
     /* get the certificate size */
     asn1_skip_obj(cert, &cert_size, ASN1_SEQUENCE);
 
-    if (asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0)
+    if (asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0) {
         goto end_cert;
+    }
 
     begin_tbs = offset;         /* start of the tbs */
     end_tbs = begin_tbs;        /* work out the end of the tbs */
     asn1_skip_obj(cert, &end_tbs, ASN1_SEQUENCE);
 
-    if (asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0)
+    if (asn1_next_obj(cert, &offset, ASN1_SEQUENCE) < 0) {
         goto end_cert;
+    }
 
     if (cert[offset] == ASN1_EXPLICIT_TAG) { /* optional version */
-        if (asn1_version(cert, &offset, x509_ctx))
+        if (asn1_version(cert, &offset, x509_ctx)) {
             goto end_cert;
+        }
     }
 
     if (asn1_skip_obj(cert, &offset, ASN1_INTEGER) || /* serial number */
@@ -405,8 +408,7 @@ int x509_verify(const CA_CERT_CTX *ca_cert_ctx, const X509_CTX *cert)
     }
 
     /* check the signature */
-    cert_sig = sig_verify(ctx, cert->signature, cert->sig_len,
-                          bi_clone(ctx, mod), bi_clone(ctx, expn));
+    cert_sig = sig_verify(ctx, cert->signature, cert->sig_len, bi_clone(ctx, mod), bi_clone(ctx, expn));
 
     if (cert_sig && cert->digest) {
         if (bi_compare(cert_sig, cert->digest) != 0)

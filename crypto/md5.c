@@ -102,7 +102,7 @@ static const uint8_t PADDING[64] = {
 /**
  * MD5 initialization - begins an MD5 operation, writing a new ctx.
  */
-EXP_FUNC void STDCALL MD5_Init(MD5_CTX *ctx)
+void  MD5_Init(MD5_CTX *ctx)
 {
     ctx->count[0] = ctx->count[1] = 0;
 
@@ -117,7 +117,7 @@ EXP_FUNC void STDCALL MD5_Init(MD5_CTX *ctx)
 /**
  * Accepts an array of octets as the next portion of the message.
  */
-EXP_FUNC void STDCALL MD5_Update(MD5_CTX *ctx, const uint8_t * msg, int len)
+void  MD5_Update(MD5_CTX *ctx, const uint8_t * msg, int len)
 {
     uint32_t x;
     int i, partLen;
@@ -151,7 +151,7 @@ EXP_FUNC void STDCALL MD5_Update(MD5_CTX *ctx, const uint8_t * msg, int len)
 /**
  * Return the 128-bit message digest into the user's array
  */
-EXP_FUNC void STDCALL MD5_Final(uint8_t *digest, MD5_CTX *ctx)
+void  MD5_Final(uint8_t *digest, MD5_CTX *ctx)
 {
     uint8_t bits[8];
     uint32_t x, padLen;

@@ -44,13 +44,6 @@ extern "C" {
 #include "stdio.h"
 #include "string.h"
 
-#ifndef STDCALL
-#define STDCALL
-#endif
-#ifndef EXP_FUNC
-#define EXP_FUNC
-#endif
-
 
 /* enable features based on a 'super-set' capbaility. */
 #if defined(CONFIG_SSL_FULL_MODE)
@@ -182,9 +175,9 @@ typedef struct {
   uint8_t buffer[64];       /* input buffer */
 } MD5_CTX;
 
-EXP_FUNC void STDCALL MD5_Init(MD5_CTX *);
-EXP_FUNC void STDCALL MD5_Update(MD5_CTX *, const uint8_t *msg, int len);
-EXP_FUNC void STDCALL MD5_Final(uint8_t *digest, MD5_CTX *);
+void  MD5_Init(MD5_CTX *);
+void  MD5_Update(MD5_CTX *, const uint8_t *msg, int len);
+void  MD5_Final(uint8_t *digest, MD5_CTX *);
 
 /**************************************************************************
  * HMAC declarations
@@ -244,10 +237,10 @@ void RSA_print(const RSA_CTX *ctx);
 /**************************************************************************
  * RNG declarations
  **************************************************************************/
-EXP_FUNC void STDCALL RNG_initialize(void);
-EXP_FUNC void STDCALL RNG_custom_init(const uint8_t *seed_buf, int size);
-EXP_FUNC void STDCALL RNG_terminate(void);
-EXP_FUNC int STDCALL get_random(int num_rand_bytes, uint8_t *rand_data);
+void  RNG_initialize(void);
+void  RNG_custom_init(const uint8_t *seed_buf, int size);
+void  RNG_terminate(void);
+int  get_random(int num_rand_bytes, uint8_t *rand_data);
 int get_random_NZ(int num_rand_bytes, uint8_t *rand_data);
 
 

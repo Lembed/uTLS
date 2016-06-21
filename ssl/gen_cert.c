@@ -327,7 +327,7 @@ error:
 /**
  * Create a new certificate.
  */
-EXP_FUNC int STDCALL ssl_x509_create(SSL_CTX *ssl_ctx, uint32_t options, const char * dn[], uint8_t **cert_data)
+int  ssl_x509_create(SSL_CTX *ssl_ctx, uint32_t options, const char * dn[], uint8_t **cert_data)
 {
     int ret = X509_OK, offset = 0, seq_offset;
     /* allocate enough space to load a new certificate */

@@ -305,14 +305,15 @@ static int asn1_get_oid_x520(const uint8_t *buf, int *offset)
     int dn_type = 0;
     int len;
 
-    if ((len = asn1_next_obj(buf, offset, ASN1_OID)) < 0)
+    if ((len = asn1_next_obj(buf, offset, ASN1_OID)) < 0) {
         goto end_oid;
+    }
 
     /* expect a sequence of 2.5.4.[x] where x is a one of distinguished name
        components we are interested in. */
-    if (len == 3 && buf[(*offset)++] == 0x55 && buf[(*offset)++] == 0x04)
+    if (len == 3 && buf[(*offset)++] == 0x55 && buf[(*offset)++] == 0x04) {
         dn_type = buf[(*offset)++];
-    else {
+    } else {
         *offset += len;     /* skip over it */
     }
 
@@ -565,21 +566,13 @@ int asn1_signature_type(const uint8_t *cert,
 
     len = get_asn1_length(cert, offset);
 
-    if (len == sizeof(sig_sha1WithRSAEncrypt) &&
-        memcmp(sig_sha1WithRSAEncrypt, &cert[*offset],
-               sizeof(sig_sha1WithRSAEncrypt)) == 0) {
+    if (len == sizeof(sig_sha1WithRSAEncrypt) && memcmp(sig_sha1WithRSAEncrypt, &cert[*offset], sizeof(sig_sha1WithRSAEncrypt)) == 0) {
         x509_ctx->sig_type = SIG_TYPE_SHA1;
-    } else if (len == sizeof(sig_sha256) &&
-               memcmp(sig_sha256, &cert[*offset],
-                      sizeof(sig_sha256)) == 0) {
+    } else if (len == sizeof(sig_sha256) && memcmp(sig_sha256, &cert[*offset], sizeof(sig_sha256)) == 0) {
         x509_ctx->sig_type = SIG_TYPE_SHA256;
-    } else if (len == sizeof(sig_sha384) &&
-               memcmp(sig_sha384, &cert[*offset],
-                      sizeof(sig_sha384)) == 0) {
+    } else if (len == sizeof(sig_sha384) && memcmp(sig_sha384, &cert[*offset], sizeof(sig_sha384)) == 0) {
         x509_ctx->sig_type = SIG_TYPE_SHA384;
-    } else if (len == sizeof(sig_sha512) &&
-               memcmp(sig_sha512, &cert[*offset],
-                      sizeof(sig_sha512)) == 0) {
+    } else if (len == sizeof(sig_sha512) && memcmp(sig_sha512, &cert[*offset], sizeof(sig_sha512)) == 0) {
         x509_ctx->sig_type = SIG_TYPE_SHA512;
     } else {
         if (memcmp(sig_oid_prefix, &cert[*offset], sizeof(sig_oid_prefix))) {
