@@ -15,12 +15,8 @@ configure
 $ make menuconfig
 ```
 
-![screen](doc/makemenuconfig.png)
 
-Select your platform type, save the configuration, exit, and then type "make" again.
-To play with all the various uTLS options, Save the new configuration and rebuild. 
-
-Now you can type "make" to build it
+type "make" to build it
 
 ```bash
 $  make

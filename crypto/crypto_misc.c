@@ -97,7 +97,7 @@ int get_file(const char *filename, uint8_t **buf)
 void  RNG_initialize()
 {
 #if defined(CONFIG_USE_DEV_URANDOM)
-    rng_fd = ax_open("/dev/urandom", O_RDONLY);
+    rng_fd = u_open("/dev/urandom", O_RDONLY);
 #else
     /* start of with a stack to copy across */
     int i;
