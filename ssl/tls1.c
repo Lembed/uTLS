@@ -932,12 +932,9 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
             sent += ret;
         else {
 
-#ifdef WIN32
-            if (GetLastError() != WSAEWOULDBLOCK)
-#else
-            if (errno != EAGAIN && errno != EWOULDBLOCK)
-#endif
+            if (errno != EAGAIN && errno != EWOULDBLOCK) {
                 return SSL_ERROR_CONN_LOST;
+            }
         }
 
         /* keep going until the write buffer has some space */
@@ -1146,12 +1143,9 @@ int basic_read(SSL *ssl, uint8_t **in_data)
                            ssl->need_bytes - ssl->got_bytes);
 
     if (read_len < 0) {
-#ifdef WIN32
-        if (GetLastError() == WSAEWOULDBLOCK)
-#else
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
-#endif
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
             return 0;
+        }
     }
 
     /* connection has gone, so die */

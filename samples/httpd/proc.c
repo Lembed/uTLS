@@ -181,20 +181,11 @@ static void procdirlisting(struct connstruct *cn)
 
     strcpy(actualfile, cn->actualfile);
 
-#ifdef WIN32
-    strcat(actualfile, "*");
-    cn->dirp = FindFirstFile(actualfile, &cn->file_data);
 
-    if (cn->dirp == INVALID_HANDLE_VALUE) {
-        send_error(cn, 404);
-        return;
-    }
-#else
     if ((cn->dirp = opendir(actualfile)) == NULL) {
         send_error(cn, 404);
         return;
     }
-#endif
 
     snprintf(buf, sizeof(buf), HTTP_VERSION
              " 200 OK\nContent-Type: text/html\n\n"
@@ -207,9 +198,8 @@ static void procdirlisting(struct connstruct *cn)
 
 void procdodir(struct connstruct *cn)
 {
-#ifndef WIN32
+
     struct dirent *dp;
-#endif
     char buf[MAXREQUESTLENGTH];
     char encbuf[1024];
     char *file;
@@ -217,26 +207,17 @@ void procdodir(struct connstruct *cn)
     do {
         buf[0] = 0;
 
-#ifdef WIN32
-        if (!FindNextFile(cn->dirp, &cn->file_data))
-#else
-        if ((dp = readdir(cn->dirp)) == NULL)
-#endif
-        {
+
+        if ((dp = readdir(cn->dirp)) == NULL) {
             snprintf(buf, sizeof(buf), "</body></html>\n");
             special_write(cn, buf, strlen(buf));
             removeconnection(cn);
-#ifndef WIN32
+
             closedir(cn->dirp);
-#endif
             return;
         }
 
-#ifdef WIN32
-        file = cn->file_data.cFileName;
-#else
         file = dp->d_name;
-#endif
 
         /* if no index file, don't display the ".." directory */
         if (cn->filereq[0] == '/' && cn->filereq[1] == '\0' &&
@@ -429,7 +410,7 @@ void procsendhead(struct connstruct *cn)
         return;
     } else {
         int flags = O_RDONLY;
-#if defined(WIN32) || defined(CONFIG_PLATFORM_CYGWIN)
+#if defined(CONFIG_PLATFORM_CYGWIN)
         flags |= O_BINARY;
 #endif
         cn->filedesc = open(cn->actualfile, flags);
@@ -458,19 +439,8 @@ void procsendhead(struct connstruct *cn)
         TTY_FLUSH();
 #endif
 
-#ifdef WIN32
-        for (;;) {
-            procreadfile(cn);
-            if (cn->filedesc == -1)
-                break;
 
-            do {
-                procsendfile(cn);
-            } while (cn->state != STATE_WANT_TO_READ_FILE);
-        }
-#else
         cn->state = STATE_WANT_TO_READ_FILE;
-#endif
     }
 }
 
@@ -529,9 +499,6 @@ static void proccgi(struct connstruct *cn)
     const char *type = "HEAD";
     int cgi_index = 0, i;
     pid_t pid;
-#ifdef WIN32
-    int tmp_stdout;
-#endif
 
     snprintf(cgienv[0], MAXREQUESTLENGTH,
              HTTP_VERSION" 200 OK\nServer: %s\n%s",
@@ -548,8 +515,6 @@ static void proccgi(struct connstruct *cn)
     TTY_FLUSH();
 #endif
 
-    /* win32 cgi is a bit too painful */
-#ifndef WIN32
     /* set up pipe that is used for sending POST query data to CGI script*/
     if (cn->reqtype == TYPE_POST) {
         if (pipe(spipe) == -1) {
@@ -683,7 +648,6 @@ static void proccgi(struct connstruct *cn)
     execve(myargs[0], myargs, cgiptr);
     printf("Content-type: text/plain\n\nshouldn't get here\n");
     _exit(1);
-#endif
 }
 
 static char * cgi_filetype_match(struct connstruct *cn, const char *fn)
@@ -877,7 +841,6 @@ static void buildactualfile(struct connstruct *cn)
     char *cp;
     snprintf(cn->actualfile, MAXREQUESTLENGTH, ".%s", cn->filereq);
 
-#ifndef WIN32
     /* Add directory slash if not there */
     if (isdir(cn->actualfile) &&
         cn->actualfile[strlen(cn->actualfile) - 1] != '/')
@@ -889,34 +852,6 @@ static void buildactualfile(struct connstruct *cn)
         cn->dirname[0] = 0;
     else
         *cp = 0;
-#else
-    {
-        char curr_dir[MAXREQUESTLENGTH];
-        char path[MAXREQUESTLENGTH];
-        char *t = cn->actualfile;
-
-        GetCurrentDirectory(MAXREQUESTLENGTH, curr_dir);
-
-        /* convert all the forward slashes to back slashes */
-        while ((t = strchr(t, '/')))
-            * t++ = '\\';
-
-        snprintf(path, MAXREQUESTLENGTH, "%s%s", curr_dir, cn->actualfile);
-        memcpy(cn->actualfile, path, MAXREQUESTLENGTH);
-
-        /* Add directory slash if not there */
-        if (isdir(cn->actualfile) &&
-            cn->actualfile[strlen(cn->actualfile) - 1] != '\\')
-            strcat(cn->actualfile, "\\");
-
-        /* work out the directory name */
-        strncpy(cn->dirname, cn->actualfile, MAXREQUESTLENGTH);
-        if ((cp = strrchr(cn->dirname, '\\')) == NULL)
-            cn->dirname[0] = 0;
-        else
-            *cp = 0;
-    }
-#endif
 }
 
 static int sanitizefile(const char *buf)

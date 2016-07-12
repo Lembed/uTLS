@@ -43,9 +43,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#ifndef WIN32
+
 #include <pthread.h>
-#endif
 
 #include "os_port.h"
 #include "ssl.h"
@@ -935,19 +934,11 @@ static void do_client(client_t *clnt)
                 g_port, clnt->openssl_option);
     } else if (strstr(clnt->testname, "GNUTLS") == NULL) {
         sprintf(openssl_buf, "echo \"hello client\" | openssl s_client -tls1 "
-#ifdef WIN32
-                "-connect localhost:%d -quiet %s",
-#else
                 "-connect localhost:%d -quiet %s > /dev/null 2>&1",
-#endif
                 g_port, clnt->openssl_option);
     } else { /* gnutls */
         sprintf(openssl_buf, "echo \"hello client\" | gnutls-cli "
-#ifdef WIN32
-                "-p %d %s 127.0.0.1",
-#else
                 "-p %d %s 127.0.0.1 > /dev/null 2>&1",
-#endif
                 g_port, clnt->openssl_option);
     }
 
@@ -970,9 +961,8 @@ static int SSL_server_test(
     uint8_t *read_buf;
     socklen_t clnt_len = sizeof(client_addr);
     client_t client_data;
-#ifndef WIN32
     pthread_t thread;
-#endif
+
     g_port++;
 
     client_data.testname = testname;
@@ -1022,14 +1012,10 @@ static int SSL_server_test(
             goto error;
     }
 
-#ifndef WIN32
+
     pthread_create(&thread, NULL,
                    (void *(*)(void *))do_client, (void *)&client_data);
     pthread_detach(thread);
-#else
-    CreateThread(NULL, 1024, (LPTHREAD_START_ROUTINE)do_client,
-                 (LPVOID)&client_data, 0, NULL);
-#endif
 
     for (;;) {
         int client_fd, size = 0;
@@ -1402,9 +1388,7 @@ cleanup:
  **************************************************************************/
 typedef struct {
     uint8_t session_id[SSL_SESSION_ID_SIZE];
-#ifndef WIN32
     pthread_t server_thread;
-#endif
     int start_server;
     int stop_server;
     int do_reneg;
@@ -1419,9 +1403,8 @@ typedef struct {
 static void do_server(server_t *svr)
 {
     char openssl_buf[2048];
-#ifndef WIN32
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-#endif
+
     if (svr->do_gnutls) {
         sprintf(openssl_buf, "gnutls-serv "
                 "-p %d --quiet %s ", g_port, svr->openssl_option);
@@ -1448,9 +1431,8 @@ static int SSL_client_test(
     int client_fd = -1;
     uint8_t *session_id = NULL;
     int ret = 1;
-#ifndef WIN32
     pthread_t thread;
-#endif
+
 
     server_data.do_gnutls = strstr(test, "GNUTLS") != NULL;
 
@@ -1458,14 +1440,10 @@ static int SSL_client_test(
         g_port++;
         server_data.openssl_option = openssl_option;
 
-#ifndef WIN32
+
         pthread_create(&thread, NULL,
                        (void *(*)(void *))do_server, (void *)&server_data);
         pthread_detach(thread);
-#else
-        CreateThread(NULL, 1024, (LPTHREAD_START_ROUTINE)do_server,
-                     (LPVOID)&server_data, 0, NULL);
-#endif
     }
 
     usleep(200000);           /* allow server to start */
@@ -1571,9 +1549,7 @@ client_test_exit:
             ssl_ctx_free(*ssl_ctx);
             *ssl_ctx = NULL;
         } else if (sess_resume->start_server) {
-#ifndef WIN32
             sess_resume->server_thread = thread;
-#endif
         }
     } else {
         ssl_ctx_free(*ssl_ctx);
@@ -1899,9 +1875,8 @@ static int SSL_unblocked_test(void)
     uint8_t *read_buf;
     socklen_t clnt_len = sizeof(client_addr);
     SSL *ssl_svr;
-#ifndef WIN32
     pthread_t thread;
-#endif
+
     memset(basic_buf, 0xA5, sizeof(basic_buf) / 2);
     memset(&basic_buf[sizeof(basic_buf) / 2], 0x5A, sizeof(basic_buf) / 2);
 
@@ -1910,14 +1885,11 @@ static int SSL_unblocked_test(void)
 
     ssl_svr_ctx = ssl_ctx_new(DEFAULT_SVR_OPTION, SSL_DEFAULT_SVR_SESS);
 
-#ifndef WIN32
+
     pthread_create(&thread, NULL,
                    (void *(*)(void *))do_unblocked, NULL);
     pthread_detach(thread);
-#else
-    CreateThread(NULL, 1024, (LPTHREAD_START_ROUTINE)do_unblocked,
-                 NULL, 0, NULL);
-#endif
+
 
     /* Wait for a client to connect */
     if ((client_fd = accept(server_fd,
@@ -1960,7 +1932,7 @@ error:
     return ret;
 }
 
-#if !defined(WIN32) && defined(CONFIG_SSL_CTX_MUTEXING)
+#if defined(CONFIG_SSL_CTX_MUTEXING)
 /**************************************************************************
  * Multi-Threading Tests
  *
@@ -2100,7 +2072,7 @@ error:
     SOCKET_CLOSE(server_fd);
     return res;
 }
-#endif /* !defined(WIN32) && defined(CONFIG_SSL_CTX_MUTEXING) */
+#endif /* defined(CONFIG_SSL_CTX_MUTEXING) */
 
 /**************************************************************************
  * Header issue
@@ -2175,17 +2147,9 @@ int main(int argc, char *argv[])
     BI_CTX *bi_ctx;
     int fd;
 
-#ifdef WIN32
-    WSADATA wsaData;
-    WORD wVersionRequested = MAKEWORD(2, 2);
-    WSAStartup(wVersionRequested, &wsaData);
-    fd = _open("test_result.txt", O_WRONLY | O_TEMPORARY | O_CREAT, _S_IWRITE);
-    dup2(fd, 2);                        /* write stderr to this file */
-#else
     fd = open("/dev/null", O_WRONLY);   /* write stderr to /dev/null */
     signal(SIGPIPE, SIG_IGN);           /* ignore pipe errors */
     dup2(fd, 2);
-#endif
 
     /* can't do testing in this mode */
 #if defined CONFIG_SSL_GENERATE_X509_CERT
@@ -2263,7 +2227,7 @@ int main(int argc, char *argv[])
     }
     TTY_FLUSH();
 
-#if !defined(WIN32) && defined(CONFIG_SSL_CTX_MUTEXING)
+#if defined(CONFIG_SSL_CTX_MUTEXING)
     if (multi_thread_test())
         goto cleanup;
 #endif

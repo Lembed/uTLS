@@ -38,17 +38,12 @@
 #include <stdio.h>
 #include "os_port.h"
 #include "crypto_misc.h"
-#ifdef CONFIG_WIN32_USE_CRYPTO_LIB
-#include "wincrypt.h"
-#endif
 
-#ifndef WIN32
+
 static int rng_fd = -1;
-#elif defined(CONFIG_WIN32_USE_CRYPTO_LIB)
-static HCRYPTPROV gCryptProv;
-#endif
 
-#if (!defined(CONFIG_USE_DEV_URANDOM) && !defined(CONFIG_WIN32_USE_CRYPTO_LIB))
+
+#if (!defined(CONFIG_USE_DEV_URANDOM))
 /* change to processor registers as appropriate */
 #define ENTROPY_POOL_SIZE 32
 #define ENTROPY_COUNTER1 ((((uint64_t)tv.tv_sec)<<32) | tv.tv_usec)
@@ -101,21 +96,8 @@ int get_file(const char *filename, uint8_t **buf)
  */
 void  RNG_initialize()
 {
-#if !defined(WIN32) && defined(CONFIG_USE_DEV_URANDOM)
+#if defined(CONFIG_USE_DEV_URANDOM)
     rng_fd = ax_open("/dev/urandom", O_RDONLY);
-#elif defined(WIN32) && defined(CONFIG_WIN32_USE_CRYPTO_LIB)
-    if (!CryptAcquireContext(&gCryptProv,
-                             NULL, NULL, PROV_RSA_FULL, 0)) {
-        if (GetLastError() == NTE_BAD_KEYSET &&
-            !CryptAcquireContext(&gCryptProv,
-                                 NULL,
-                                 NULL,
-                                 PROV_RSA_FULL,
-                                 CRYPT_NEWKEYSET)) {
-            printf("CryptoLib: %x\n", unsupported_str, GetLastError());
-            exit(1);
-        }
-    }
 #else
     /* start of with a stack to copy across */
     int i;
@@ -129,12 +111,7 @@ void  RNG_initialize()
  */
 void  RNG_custom_init(const uint8_t *seed_buf, int size)
 {
-#if defined(WIN32) || defined(CONFIG_WIN32_USE_CRYPTO_LIB)
-    int i;
 
-    for (i = 0; i < ENTROPY_POOL_SIZE && i < size; i++)
-        entropy_pool[i] ^= seed_buf[i];
-#endif
 }
 
 /**
@@ -142,11 +119,7 @@ void  RNG_custom_init(const uint8_t *seed_buf, int size)
  */
 void  RNG_terminate(void)
 {
-#ifndef WIN32
     close(rng_fd);
-#elif defined(CONFIG_WIN32_USE_CRYPTO_LIB)
-    CryptReleaseContext(gCryptProv, 0);
-#endif
 }
 
 /**
@@ -154,13 +127,10 @@ void  RNG_terminate(void)
  */
 int  get_random(int num_rand_bytes, uint8_t *rand_data)
 {
-#if !defined(WIN32) && defined(CONFIG_USE_DEV_URANDOM)
+#if defined(CONFIG_USE_DEV_URANDOM)
     /* use the Linux default - read from /dev/urandom */
     if (read(rng_fd, rand_data, num_rand_bytes) < 0)
         return -1;
-#elif defined(WIN32) && defined(CONFIG_WIN32_USE_CRYPTO_LIB)
-    /* use Microsoft Crypto Libraries */
-    CryptGenRandom(gCryptProv, num_rand_bytes, rand_data);
 #else   /* nothing else to use, so use a custom RNG */
     /* The method we use when we've got nothing better. Use RC4, time
        and a couple of random seeds to generate a random sequence */
@@ -276,10 +246,6 @@ void  print_blob(const char *format,
     va_end(ap);
     TTY_FLUSH();
 }
-#elif defined(WIN32)
-/* VC6.0 doesn't handle variadic macros */
-void  print_blob(const char *format, const unsigned char *data,
-                 int size, ...) {}
 #endif
 
 #if defined(CONFIG_SSL_HAS_PEM) || defined(CONFIG_HTTP_HAS_AUTHORIZATION)

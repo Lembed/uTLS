@@ -67,12 +67,7 @@ struct connstruct {
     SSL *ssl;
 
 #if defined(CONFIG_HTTP_DIRECTORIES)
-#ifdef WIN32
-    HANDLE dirp;
-    WIN32_FIND_DATA file_data;
-#else
     DIR *dirp;
-#endif
 #endif
 
     time_t timeout;
