@@ -71,16 +71,16 @@ extern "C" {
 
 
 /* some functions to mutate the way these work */
-#define malloc(A)       ax_malloc(A)
+#define malloc(A)       u_malloc(A)
 #ifndef realloc
-#define realloc(A,B)    ax_realloc(A,B)
+#define realloc(A,B)    u_realloc(A,B)
 #endif
-#define calloc(A,B)     ax_calloc(A,B)
+#define calloc(A,B)     u_calloc(A,B)
 
-void *  ax_malloc(size_t s);
-void *  ax_realloc(void *y, size_t s);
-void *  ax_calloc(size_t n, size_t s);
-int  ax_open(const char *pathname, int flags);
+void *  u_malloc(size_t s);
+void *  u_realloc(void *y, size_t s);
+void *  u_calloc(size_t n, size_t s);
+int  u_open(const char *pathname, int flags);
 
 #ifdef CONFIG_PLATFORM_LINUX
 void exit_now(const char *format, ...) __attribute((noreturn));

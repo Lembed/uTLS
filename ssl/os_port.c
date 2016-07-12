@@ -52,7 +52,7 @@ static const char * file_open_str = "Could not open file \"%s\"";
  * This just makes life much easier on embedded systems, since we're
  * suffering major trauma...
  */
-void *  ax_malloc(size_t s)
+void *  u_malloc(size_t s)
 {
     void *x;
 
@@ -62,7 +62,7 @@ void *  ax_malloc(size_t s)
     return x;
 }
 
-void *  ax_realloc(void *y, size_t s)
+void *  u_realloc(void *y, size_t s)
 {
     void *x;
 
@@ -72,7 +72,7 @@ void *  ax_realloc(void *y, size_t s)
     return x;
 }
 
-void *  ax_calloc(size_t n, size_t s)
+void *  u_calloc(size_t n, size_t s)
 {
     void *x;
 
@@ -82,7 +82,7 @@ void *  ax_calloc(size_t n, size_t s)
     return x;
 }
 
-int  ax_open(const char *pathname, int flags)
+int  u_open(const char *pathname, int flags)
 {
     int x;
 
